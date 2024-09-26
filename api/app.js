@@ -20,6 +20,11 @@ app.use(cors());
 const swaggerSpec = swaggerJsDoc();
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+app.get('/api-docs.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpec);
+  });
+
 app.use('/api', userRoutes);
 app.use('/api', roleRoutes);
 app.use('/api', postRoutes);

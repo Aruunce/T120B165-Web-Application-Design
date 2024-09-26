@@ -22,19 +22,19 @@ const router = express.Router();
  *         description: The ID of the post to which the comment will be added
  *         schema:
  *           type: integer
- *       - name: content
- *         in: body
- *         required: true
- *         description: The content of the comment
- *         schema:
- *           type: object
- *           properties:
- *             content:
- *               type: string
- *               example: "This is a comment."
- *             userID:
- *               type: integer
- *               example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 example: "This is a comment."
+ *               userID:
+ *                 type: integer
+ *                 example: 1
  *     responses:
  *       201:
  *         description: Comment created successfully
@@ -47,26 +47,7 @@ const router = express.Router();
  *                   type: string
  *                   example: "Comment created successfully"
  *                 comment:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 1
- *                     content:
- *                       type: string
- *                       example: "This is a comment."
- *                     userID:
- *                       type: integer
- *                       example: 1
- *                     postID:
- *                       type: integer
- *                       example: 1
- *                     createdAt:
- *                       type: string
- *                       format: date-time
- *                     updatedAt:
- *                       type: string
- *                       format: date-time
+ *                   $ref: '#/components/schemas/Comment'
  *       404:
  *         description: Post not found
  *       500:
@@ -95,26 +76,7 @@ router.post('/posts/:postId/comments', commentController.createCommentForPost);
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                     example: 1
- *                   content:
- *                     type: string
- *                     example: "This is a comment."
- *                   userID:
- *                     type: integer
- *                     example: 1
- *                   postID:
- *                     type: integer
- *                     example: 1
- *                   createdAt:
- *                     type: string
- *                     format: date-time
- *                   updatedAt:
- *                     type: string
- *                     format: date-time
+ *                 $ref: '#/components/schemas/Comment'
  *       404:
  *         description: Post not found
  *       500:
@@ -135,16 +97,16 @@ router.get('/posts/:postId/comments', commentController.getCommentsByPostId);
  *         description: The ID of the comment to be updated
  *         schema:
  *           type: integer
- *       - name: content
- *         in: body
- *         required: true
- *         description: The new content of the comment
- *         schema:
- *           type: object
- *           properties:
- *             content:
- *               type: string
- *               example: "Updated comment content."
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 example: "Updated comment content."
  *     responses:
  *       200:
  *         description: Comment updated successfully
@@ -157,26 +119,7 @@ router.get('/posts/:postId/comments', commentController.getCommentsByPostId);
  *                   type: string
  *                   example: "Comment updated successfully"
  *                 comment:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 1
- *                     content:
- *                       type: string
- *                       example: "Updated comment content."
- *                     userID:
- *                       type: integer
- *                       example: 1
- *                     postID:
- *                       type: integer
- *                       example: 1
- *                     createdAt:
- *                       type: string
- *                       format: date-time
- *                     updatedAt:
- *                       type: string
- *                       format: date-time
+ *                   $ref: '#/components/schemas/Comment'
  *       404:
  *         description: Comment not found
  *       500:
@@ -206,5 +149,32 @@ router.put('/comments/:id', commentController.updateComment);
  *         description: Internal server error
  */
 router.delete('/comments/:id', commentController.deleteComment);
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Comment:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         content:
+ *           type: string
+ *           example: "This is a comment."
+ *         userID:
+ *           type: integer
+ *           example: 1
+ *         postID:
+ *           type: integer
+ *           example: 1
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ */
 
 module.exports = router;

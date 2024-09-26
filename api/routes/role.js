@@ -37,20 +37,7 @@ const router = express.Router();
  *                   type: string
  *                   example: "Role created successfully"
  *                 role:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 1
- *                     roleName:
- *                       type: string
- *                       example: "Administrator"
- *                     createdAt:
- *                       type: string
- *                       format: date-time
- *                     updatedAt:
- *                       type: string
- *                       format: date-time
+ *                   $ref: '#/components/schemas/Role'
  *       500:
  *         description: Internal server error
  */
@@ -70,20 +57,7 @@ router.post('/roles', roleController.createRole);
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                     example: 1
- *                   roleName:
- *                     type: string
- *                     example: "Administrator"
- *                   createdAt:
- *                     type: string
- *                     format: date-time
- *                   updatedAt:
- *                     type: string
- *                     format: date-time
+ *                 $ref: '#/components/schemas/Role'
  *       500:
  *         description: Internal server error
  */
@@ -108,20 +82,7 @@ router.get('/roles', roleController.getAllRoles);
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: integer
- *                   example: 1
- *                 roleName:
- *                   type: string
- *                   example: "Administrator"
- *                 createdAt:
- *                   type: string
- *                   format: date-time
- *                 updatedAt:
- *                   type: string
- *                   format: date-time
+ *               $ref: '#/components/schemas/Role'
  *       404:
  *         description: Role not found
  *       500:
@@ -142,16 +103,16 @@ router.get('/roles/:id', roleController.getRoleById);
  *         description: The ID of the role to update
  *         schema:
  *           type: integer
- *       - name: roleName
- *         in: body
- *         required: true
- *         description: The new role name
- *         schema:
- *           type: object
- *           properties:
- *             roleName:
- *               type: string
- *               example: "Moderator"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               roleName:
+ *                 type: string
+ *                 example: "Moderator"
  *     responses:
  *       200:
  *         description: Role updated successfully
@@ -164,20 +125,7 @@ router.get('/roles/:id', roleController.getRoleById);
  *                   type: string
  *                   example: "Role updated successfully"
  *                 role:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 1
- *                     roleName:
- *                       type: string
- *                       example: "Moderator"
- *                     createdAt:
- *                       type: string
- *                       format: date-time
- *                     updatedAt:
- *                       type: string
- *                       format: date-time
+ *                   $ref: '#/components/schemas/Role'
  *       404:
  *         description: Role not found
  *       500:
@@ -207,5 +155,26 @@ router.put('/roles/:id', roleController.updateRole);
  *         description: Internal server error
  */
 router.delete('/roles/:id', roleController.deleteRole);
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Role:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         roleName:
+ *           type: string
+ *           example: "Administrator"
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ */
 
 module.exports = router;

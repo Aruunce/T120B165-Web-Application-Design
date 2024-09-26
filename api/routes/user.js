@@ -49,18 +49,7 @@ const {
  *                   type: string
  *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4iLCJpYXQiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
  *                 user:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       format: int64
- *                       example: 1
- *                     username:
- *                       type: string
- *                       example: john_doe
- *                     role:
- *                       type: string
- *                       example: admin
+ *                   $ref: '#/components/schemas/User'
  *       400:
  *         description: Bad Request. Invalid username or password.
  *         content:
@@ -70,7 +59,7 @@ const {
  *               properties:
  *                 error:
  *                   type: string
- *                   example: Invalid email or password
+ *                   example: Invalid username or password
  *       500:
  *         description: Internal Server Error. An error occurred while processing the request.
  *         content:
@@ -128,28 +117,7 @@ router.post('/login', loginUser);
  *                   type: string
  *                   example: User registered successfully
  *                 user:
- *                   type: object
- *                   properties:
- *                     userID:
- *                       type: integer
- *                       format: int64
- *                       example: 1
- *                     username:
- *                       type: string
- *                       example: john_doe
- *                     email:
- *                       type: string
- *                       example: john.doe@example.com
- *                     firstName:
- *                       type: string
- *                       example: John
- *                     lastName:
- *                       type: string
- *                       example: Doe
- *                     roleID:
- *                       type: integer
- *                       format: int64
- *                       example: 2
+ *                   $ref: '#/components/schemas/User'
  *       400:
  *         description: Bad Request. The provided username is already taken or other validation issues.
  *         content:
@@ -187,24 +155,7 @@ router.post('/register', registerUser);
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 userID:
- *                   type: integer
- *                   format: int64
- *                   example: 1
- *                 username:
- *                   type: string
- *                   example: john_doe
- *                 email:
- *                   type: string
- *                   example: john.doe@example.com
- *                 firstName:
- *                   type: string
- *                   example: John
- *                 lastName:
- *                   type: string
- *                   example: Doe
+ *               $ref: '#/components/schemas/User'
  *       404:
  *         description: Not Found. The user profile could not be found.
  *         content:
@@ -225,12 +176,6 @@ router.post('/register', registerUser);
  *                 error:
  *                   type: string
  *                   example: Internal server error
- * components:
- *   securitySchemes:
- *     bearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
  */
 router.get('/profile', auth, getUserProfile);
 
@@ -248,24 +193,7 @@ router.get('/profile', auth, getUserProfile);
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   userID:
- *                     type: integer
- *                     format: int64
- *                     example: 1
- *                   username:
- *                     type: string
- *                     example: john_doe
- *                   email:
- *                     type: string
- *                     example: john.doe@example.com
- *                   firstName:
- *                     type: string
- *                     example: John
- *                   lastName:
- *                     type: string
- *                     example: Doe
+ *                 $ref: '#/components/schemas/User'
  *       500:
  *         description: Internal Server Error. An error occurred while processing the request.
  *         content:
@@ -389,5 +317,42 @@ router.get('/users/:id/posts', getUserPosts);
  *                   example: Internal server error
  */
 router.delete('/users/:id', deleteUser);
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         userID:
+ *           type: integer
+ *           format: int64
+ *           example: 1
+ *         username:
+ *           type: string
+ *           example: john_doe
+ *         email:
+ *           type: string
+ *           example: john.doe@example.com
+ *         firstName:
+ *           type: string
+ *           example: John
+ *         lastName:
+ *           type: string
+ *           example: Doe
+ *         roleID:
+ *           type: integer
+ *           format: int64
+ *           example: 2
+ *         role:
+ *           type: string
+ *           example: admin
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
 
 module.exports = router;

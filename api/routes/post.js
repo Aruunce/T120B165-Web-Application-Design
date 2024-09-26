@@ -43,26 +43,7 @@ const router = express.Router();
  *                   type: string
  *                   example: "Post created successfully"
  *                 post:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 1
- *                     content:
- *                       type: string
- *                       example: "This is a new post."
- *                     postType:
- *                       type: string
- *                       example: "idea"
- *                     userID:
- *                       type: integer
- *                       example: 1
- *                     createdAt:
- *                       type: string
- *                       format: date-time
- *                     updatedAt:
- *                       type: string
- *                       format: date-time
+ *                   $ref: '#/components/schemas/Post'
  *       500:
  *         description: Internal server error
  */
@@ -82,26 +63,7 @@ router.post('/posts', postController.createPost);
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                     example: 1
- *                   content:
- *                     type: string
- *                     example: "This is a new post."
- *                   postType:
- *                     type: string
- *                     example: "idea"
- *                   userID:
- *                     type: integer
- *                     example: 1
- *                   createdAt:
- *                     type: string
- *                     format: date-time
- *                   updatedAt:
- *                     type: string
- *                     format: date-time
+ *                 $ref: '#/components/schemas/Post'
  *       500:
  *         description: Internal server error
  */
@@ -126,26 +88,7 @@ router.get('/posts', postController.getAllPosts);
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: integer
- *                   example: 1
- *                 content:
- *                   type: string
- *                   example: "This is a new post."
- *                 postType:
- *                   type: string
- *                   example: "idea"
- *                 userID:
- *                   type: integer
- *                   example: 1
- *                 createdAt:
- *                   type: string
- *                   format: date-time
- *                 updatedAt:
- *                   type: string
- *                   format: date-time
+ *               $ref: '#/components/schemas/Post'
  *       404:
  *         description: Post not found
  *       500:
@@ -166,19 +109,21 @@ router.get('/posts/:id', postController.getPostById);
  *         description: The ID of the post to update
  *         schema:
  *           type: integer
- *       - name: content
- *         in: body
+ *       - name: body
+ *         in: requestBody
  *         required: true
  *         description: The new content of the post
- *         schema:
- *           type: object
- *           properties:
- *             content:
- *               type: string
- *               example: "Updated post content."
- *             postType:
- *               type: string
- *               example: "forum"  # or 'idea'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 content:
+ *                   type: string
+ *                   example: "Updated post content."
+ *                 postType:
+ *                   type: string
+ *                   example: "forum"  # or 'idea'
  *     responses:
  *       200:
  *         description: Post updated successfully
@@ -191,26 +136,7 @@ router.get('/posts/:id', postController.getPostById);
  *                   type: string
  *                   example: "Post updated successfully"
  *                 post:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 1
- *                     content:
- *                       type: string
- *                       example: "Updated post content."
- *                     postType:
- *                       type: string
- *                       example: "forum"
- *                     userID:
- *                       type: integer
- *                       example: 1
- *                     createdAt:
- *                       type: string
- *                       format: date-time
- *                     updatedAt:
- *                       type: string
- *                       format: date-time
+ *                   $ref: '#/components/schemas/Post'
  *       404:
  *         description: Post not found
  *       500:
@@ -240,5 +166,33 @@ router.put('/posts/:id', postController.updatePost);
  *         description: Internal server error
  */
 router.delete('/posts/:id', postController.deletePost);
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Post:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         content:
+ *           type: string
+ *           example: "This is a new post."
+ *         postType:
+ *           type: string
+ *           example: "idea"
+ *         userID:
+ *           type: integer
+ *           example: 1
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ */
+
 
 module.exports = router;
