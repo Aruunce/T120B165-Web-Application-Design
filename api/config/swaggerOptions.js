@@ -12,11 +12,11 @@ const swaggerOptions = () => {
       },
       servers: [
         {
-          url: process.env.API_URL || 'http://localhost:3000/api', // Default to localhost if API_URL is not set
+          url: process.env.API_URL || 'http://localhost:3000/api',
         },
       ],
     },
-    apis: [path.join(__dirname, '../routes/*.js')], // Adjust this path to where your route files are located
+    apis: [path.join(__dirname, '../routes/*.js')],
   });
 };
 

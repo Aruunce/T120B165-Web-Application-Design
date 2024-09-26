@@ -34,7 +34,6 @@ exports.registerUser = async (req, res) => {
   try {
     const { username, password, email, firstName, lastName, role } = req.body;
 
-    // Check if the username or email already exists
     const existingUser = await Users.findOne({
       where: {
         [Op.or]: [
@@ -48,8 +47,7 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ error: 'Username or email already taken' });
     }
 
-    // Get role ID
-    let roleID = 1; // Default role ID for 'user'
+    let roleID = 2;
     if (role) {
       const foundRole = await Roles.findOne({ where: { roleName: role } });
       if (foundRole) {
@@ -57,7 +55,6 @@ exports.registerUser = async (req, res) => {
       }
     }
 
-    // Create the new user
     const newUser = await Users.create({
       username,
       password,
@@ -121,7 +118,6 @@ exports.deleteUser = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Optional: Check if the user trying to delete is an admin or the user themself
     if (req.user.role !== 'admin' && req.user.id !== user.userID) {
       return res.status(403).json({ error: 'Unauthorized to delete this user' });
     }
@@ -138,14 +134,12 @@ exports.getUserPosts = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Find the user
     const user = await Users.findByPk(id);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Fetch the posts for the user
     const posts = await Posts.findAll({ where: { userID: id } });
 
     res.json(posts);

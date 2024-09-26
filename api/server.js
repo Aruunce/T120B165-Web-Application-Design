@@ -1,13 +1,11 @@
 const app = require("./app");
 const dotenv = require("dotenv");
 
-// Setting up config file
 dotenv.config({ path: "api/config/config.env" });
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require('./config/swaggerOptions');
 
-// Handle Uncaught exceptions
 process.on("uncaughtException", (err) => {
   console.log(`ERROR: ${err.stack}`);
   console.log("Shutting down due to uncaught exception.");
@@ -23,7 +21,6 @@ const server = app.listen(process.env.PORT, () => {
   );
 });
 
-// Handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
   console.log(`ERROR: ${err.message}`);
   console.log("Shutting down the server due to unhandled promise rejection.");

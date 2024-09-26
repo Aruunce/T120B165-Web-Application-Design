@@ -10,7 +10,6 @@ const sequelize = new Sequelize(process.env.DATABASE_URI, {
     },
 });
 
-// Test database connection
 sequelize
 .authenticate()
 .then(() => {

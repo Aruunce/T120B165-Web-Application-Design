@@ -1,6 +1,5 @@
 const { Role } = require('../models');
 
-// Create a new role
 exports.createRole = async (req, res) => {
   try {
     const { roleName } = req.body;
@@ -13,7 +12,6 @@ exports.createRole = async (req, res) => {
   }
 };
 
-// Get all roles
 exports.getAllRoles = async (req, res) => {
   try {
     const roles = await Role.findAll();
@@ -24,7 +22,6 @@ exports.getAllRoles = async (req, res) => {
   }
 };
 
-// Get role by ID
 exports.getRoleById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -41,7 +38,6 @@ exports.getRoleById = async (req, res) => {
   }
 };
 
-// Update a role
 exports.updateRole = async (req, res) => {
   try {
     const { id } = req.params;
@@ -61,7 +57,6 @@ exports.updateRole = async (req, res) => {
   }
 };
 
-// Delete a role
 exports.deleteRole = async (req, res) => {
   try {
     const { id } = req.params;
@@ -72,7 +67,7 @@ exports.deleteRole = async (req, res) => {
     }
 
     await role.destroy();
-    res.status(204).send(); // No Content
+    res.status(204).send();
   } catch (error) {
     console.error('Error deleting role:', error);
     res.status(500).json({ error: 'Internal server error' });

@@ -17,7 +17,6 @@ module.exports = (err, req, res, next) => {
     if (process.env.NODE_ENV === 'PRODUCTION') {
         let error = {...err};
 
-        //Handling Validation error
         if(err.name === 'ValidationError'){
             const message = Object.values(err.message).map(value => value.message);
             error = new ErrorHandler(message, 400)
@@ -28,13 +27,11 @@ module.exports = (err, req, res, next) => {
             error = new ErrorHandler(message, 400)
         }
 
-        //Handling wrong JWT error
         if(err.name === 'JsonWebTokenError'){
             const message = 'JSON Web Token is invalid. Try Again!'
             error = new ErrorHandler(message, 400)
         }
 
-        //Handling expired JWT error
         if(err.name === 'TokenExpiredError'){
             const message = 'JSON Web Token is expired. Try Again!'
             error = new ErrorHandler(message, 400)

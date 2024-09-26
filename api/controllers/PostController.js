@@ -1,6 +1,5 @@
 const { Post, User } = require('../models');
 
-// Create a new post
 exports.createPost = async (req, res) => {
   try {
     const { content, postType, userID } = req.body;
@@ -13,7 +12,6 @@ exports.createPost = async (req, res) => {
   }
 };
 
-// Get all posts
 exports.getAllPosts = async (req, res) => {
   try {
     const posts = await Post.findAll({ include: User });
@@ -24,7 +22,6 @@ exports.getAllPosts = async (req, res) => {
   }
 };
 
-// Get post by ID
 exports.getPostById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -41,7 +38,6 @@ exports.getPostById = async (req, res) => {
   }
 };
 
-// Update a post
 exports.updatePost = async (req, res) => {
   try {
     const { id } = req.params;
@@ -61,7 +57,6 @@ exports.updatePost = async (req, res) => {
   }
 };
 
-// Delete a post
 exports.deletePost = async (req, res) => {
   try {
     const { id } = req.params;
@@ -72,7 +67,7 @@ exports.deletePost = async (req, res) => {
     }
 
     await post.destroy();
-    res.status(204).send(); // No Content
+    res.status(204).send();
   } catch (error) {
     console.error('Error deleting post:', error);
     res.status(500).json({ error: 'Internal server error' });

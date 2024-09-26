@@ -6,13 +6,11 @@ exports.createCommentForPost = async (req, res) => {
       const { postId } = req.params;
       const { content, userID } = req.body;
   
-      // Check if the post exists
       const post = await Post.findByPk(postId);
       if (!post) {
         return res.status(404).json({ error: 'Post not found' });
       }
   
-      // Create the comment
       const comment = await Comment.create({ content, userID, postID: postId });
       res.status(201).json({ message: 'Comment created successfully', comment });
     } catch (error) {
@@ -21,7 +19,6 @@ exports.createCommentForPost = async (req, res) => {
     }
   };
 
-// Get all comments for a post
 exports.getCommentsByPostId = async (req, res) => {
   try {
     const { postID } = req.params;
@@ -36,7 +33,6 @@ exports.getCommentsByPostId = async (req, res) => {
   }
 };
 
-// Update a comment
 exports.updateComment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -56,7 +52,6 @@ exports.updateComment = async (req, res) => {
   }
 };
 
-// Delete a comment
 exports.deleteComment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -67,7 +62,7 @@ exports.deleteComment = async (req, res) => {
     }
 
     await comment.destroy();
-    res.status(204).send(); // No Content
+    res.status(204).send();
   } catch (error) {
     console.error('Error deleting comment:', error);
     res.status(500).json({ error: 'Internal server error' });
