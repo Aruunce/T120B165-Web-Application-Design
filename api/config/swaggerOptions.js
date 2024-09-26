@@ -6,9 +6,9 @@ const swaggerOptions = () => {
     definition: {
       openapi: "3.0.0",
       info: {
-        title: "Your API",
+        title: "Postoria API Documentation",
         version: "1.0.0",
-        description: "API documentation for your Express app",
+        description: "API documentation for Postoria app",
       },
       servers: [
         {

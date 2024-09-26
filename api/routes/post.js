@@ -109,21 +109,19 @@ router.get('/posts/:id', postController.getPostById);
  *         description: The ID of the post to update
  *         schema:
  *           type: integer
- *       - name: body
- *         in: requestBody
- *         required: true
- *         description: The new content of the post
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 content:
- *                   type: string
- *                   example: "Updated post content."
- *                 postType:
- *                   type: string
- *                   example: "forum"  # or 'idea'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 example: "Updated post content."
+ *               postType:
+ *                 type: string
+ *                 example: "forum"  # or 'idea'
  *     responses:
  *       200:
  *         description: Post updated successfully
