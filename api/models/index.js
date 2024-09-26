@@ -11,7 +11,7 @@ const Follow = require('./Follow.js');
 const Answer = require('./Answer');
 
 // User & Role
-User.belongsTo(Role, { foreignKey: 'roleID' });
+User.belongsTo(Role, { foreignKey: 'roleID', as: 'Role' });
 Role.hasMany(User, { foreignKey: 'roleID' });
 
 // User & Post
@@ -75,7 +75,6 @@ sequelize
   
   // Function to create default users
   async function createDefaultUsers() {
-    const hashedPassword = await bcrypt.hash('password123', 10); // Example password hash
   
     // Find roles by their names
     const adminRole = await Role.findOne({ where: { roleName: 'admin' } });
@@ -85,7 +84,7 @@ sequelize
       {
         username: 'admin',
         email: 'admin@example.com',
-        password: hashedPassword,
+        password: 'password123',
         firstName: 'Admin',
         lastName: 'User',
         roleID: adminRole.id,
@@ -93,7 +92,7 @@ sequelize
       {
         username: 'user1',
         email: 'user1@example.com',
-        password: hashedPassword,
+        password: 'password123',
         firstName: 'John',
         lastName: 'Doe',
         roleID: userRole.id,
@@ -101,7 +100,7 @@ sequelize
       {
         username: 'user2',
         email: 'user2@example.com',
-        password: hashedPassword,
+        password: 'password123',
         firstName: 'Jane',
         lastName: 'Doe',
         roleID: userRole.id,
@@ -109,7 +108,7 @@ sequelize
     ];
   
     for (const userData of users) {
-      const existingUser = await User.findOne({ where: { email: userData.email } });
+      const existingUser = await User.findOne({ where: { username: userData.username } });
       if (!existingUser) {
         await User.create(userData);
         console.log(`Created User: ${userData.username}`);

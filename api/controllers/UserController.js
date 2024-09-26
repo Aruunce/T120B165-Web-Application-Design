@@ -1,4 +1,4 @@
-const { Users, Roles, Posts } = require('../models');
+const { User, Role, Post } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -6,9 +6,9 @@ exports.loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    const user = await Users.findOne({
+    const user = await User.findOne({
       where: { username },
-      include: [{ model: Roles, as: 'Role', attributes: ['roleName'] }]
+      include: [{ model: Role, as: 'Role', attributes: ['roleName'] }]
     });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -34,7 +34,7 @@ exports.registerUser = async (req, res) => {
   try {
     const { username, password, email, firstName, lastName, role } = req.body;
 
-    const existingUser = await Users.findOne({
+    const existingUser = await User.findOne({
       where: {
         [Op.or]: [
           { username },
@@ -49,13 +49,13 @@ exports.registerUser = async (req, res) => {
 
     let roleID = 2;
     if (role) {
-      const foundRole = await Roles.findOne({ where: { roleName: role } });
+      const foundRole = await Role.findOne({ where: { roleName: role } });
       if (foundRole) {
         roleID = foundRole.roleID;
       }
     }
 
-    const newUser = await Users.create({
+    const newUser = await User.create({
       username,
       password,
       email,
@@ -83,7 +83,7 @@ exports.registerUser = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
   try {
-    const user = await Users.findByPk(req.user.id, {
+    const user = await User.findByPk(req.user.id, {
       attributes: ['userID', 'username', 'email', 'firstName', 'lastName']
     });
 
@@ -100,7 +100,7 @@ exports.getUserProfile = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await Users.findAll();
+    const users = await User.findAll();
 
     res.json(users);
   } catch (error) {
@@ -113,7 +113,7 @@ exports.deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const user = await Users.findByPk(id);
+    const user = await User.findByPk(id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -134,13 +134,13 @@ exports.getUserPosts = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const user = await Users.findByPk(id);
+    const user = await User.findByPk(id);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const posts = await Posts.findAll({ where: { userID: id } });
+    const posts = await Post.findAll({ where: { userID: id } });
 
     res.json(posts);
   } catch (error) {
