@@ -45,7 +45,7 @@ const Users = sequelize.define(
     roleID: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 1,
+      defaultValue: 2,
     },
     phoneNumber: {
       type: DataTypes.STRING,
