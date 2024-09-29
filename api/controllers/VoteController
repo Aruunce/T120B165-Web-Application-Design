@@ -1,0 +1,139 @@
+const { Vote, User, Post, Comment, Answer } = require('../models');
+const { validationResult } = require('express-validator');
+
+// Create or Update a Vote for Posts and Comments
+exports.createOrUpdateVote = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    const { postId, commentId } = req.params; // Either postId or commentId will be provided
+    const { userId, type } = req.body; // userId and type (upvote/downvote) from the request
+
+    let voteTarget;
+
+    // Determine if it's a post or comment vote
+    if (postId) {
+      voteTarget = await Post.findByPk(postId);
+      if (!voteTarget) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+    } else if (commentId) {
+      voteTarget = await Comment.findByPk(commentId);
+      if (!voteTarget) {
+        return res.status(404).json({ error: 'Comment not found' });
+      }
+    } else {
+      return res.status(400).json({ error: 'Must specify either postId or commentId' });
+    }
+
+    // Check if the vote already exists
+    const existingVote = await Vote.findOne({
+      where: {
+        userID: userId,
+        postID: postId || null,
+        commentID: commentId || null,
+      },
+    });
+
+    if (existingVote) {
+      // Update the existing vote
+      await existingVote.update({ type });
+      return res.json({ message: 'Vote updated successfully', vote: existingVote });
+    } else {
+      // Create a new vote
+      const voteData = {
+        userID: userId,
+        type,
+        postID: postId || null,
+        commentID: commentId || null,
+      };
+
+      const newVote = await Vote.create(voteData);
+      return res.status(201).json({ message: 'Vote created successfully', vote: newVote });
+    }
+  } catch (error) {
+    console.error('Error creating or updating vote:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Delete a Vote
+exports.deleteVote = async (req, res) => {
+  try {
+    const { voteId } = req.params;
+
+    const vote = await Vote.findByPk(voteId);
+    if (!vote) {
+      return res.status(404).json({ error: 'Vote not found' });
+    }
+
+    await vote.destroy();
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting vote:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Get all votes for a post or comment
+exports.getVotesForTarget = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params; // Get postId or commentId from params
+    let targetId;
+
+    if (postId) {
+      targetId = postId;
+    } else if (commentId) {
+      targetId = commentId;
+    } else {
+      return res.status(400).json({ error: 'Must specify either postId or commentId' });
+    }
+
+    const votes = await Vote.findAll({
+      where: {
+        postID: postId || null,
+        commentID: commentId || null,
+      },
+      include: [{ model: User }],
+    });
+
+    res.json(votes);
+  } catch (error) {
+    console.error('Error fetching votes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Vote on an Answer
+exports.voteOnAnswer = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    const { answerId } = req.params;
+    const { userId, voteType } = req.body;
+
+    // Check if the answer exists
+    const answer = await Answer.findByPk(answerId);
+    if (!answer) {
+      return res.status(404).json({ error: 'Answer not found' });
+    }
+
+    // Prevent a user from voting twice on the same answer
+    const existingVote = await Vote.findOne({ where: { answerID: answerId, userID: userId } });
+    if (existingVote) {
+      return res.status(400).json({ error: 'You have already voted on this answer.' });
+    }
+
+    const vote = await Vote.create({ answerID: answerId, userID: userId, type: voteType });
+    res.status(201).json({ message: 'Vote recorded successfully', vote });
+  } catch (error) {
+    console.error('Error voting on answer:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

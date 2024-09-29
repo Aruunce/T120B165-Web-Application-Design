@@ -8,7 +8,10 @@ const userRoutes = require('./routes/user');
 const roleRoutes = require('./routes/role');
 const postRoutes = require('./routes/post');
 const commentRoutes = require('./routes/comment');
-
+const voteRoutes = require('./routes/vote');
+const likeRetweetRoutes = require('./routes/likeRetweet');
+const followRoutes = require('./routes/follow');
+const answerRoutes = require('./routes/answer');
 
 const errorMiddleware = require('./middlewares/errors');
 
@@ -29,6 +32,10 @@ app.use('/api', userRoutes);
 app.use('/api', roleRoutes);
 app.use('/api', postRoutes);
 app.use('/api', commentRoutes);
+app.use('/api', voteRoutes);
+app.use('/api', likeRetweetRoutes);
+app.use('/api', followRoutes);
+app.use('/api', answerRoutes);
 
 app.use(errorMiddleware);
 

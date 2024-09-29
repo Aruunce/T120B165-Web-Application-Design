@@ -1,13 +1,13 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Answer = sequelize.define('Answer', {
+const Answer = sequelize.define('Answers', {
   answerID: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  postID: {
+  commentID: { 
     type: DataTypes.INTEGER,
     allowNull: false,
   },

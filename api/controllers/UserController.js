@@ -148,3 +148,41 @@ exports.getUserPosts = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+exports.updateUserProfile = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { firstName, lastName, email } = req.body;
+
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    await user.update({ firstName, lastName, email });
+    res.json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Method to get user by ID
+exports.getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findByPk(id, {
+      attributes: ['userID', 'username', 'email', 'firstName', 'lastName']
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user by ID:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

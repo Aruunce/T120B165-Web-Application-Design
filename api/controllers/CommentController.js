@@ -1,16 +1,20 @@
 const { Comment, Post, User } = require('../models');
 
-// Create a new comment
-exports.createCommentForPost = async (req, res) => {
+  // Create a new comment
+  exports.createCommentForPost = async (req, res) => {
     try {
       const { postId } = req.params;
       const { content, userID } = req.body;
-  
+
       const post = await Post.findByPk(postId);
       if (!post) {
         return res.status(404).json({ error: 'Post not found' });
       }
-  
+
+      if (post.postType !== 'idea') {
+        return res.status(400).json({ error: 'Comments can only be added to idea posts.' });
+      }
+
       const comment = await Comment.create({ content, userID, postID: postId });
       res.status(201).json({ message: 'Comment created successfully', comment });
     } catch (error) {
@@ -19,19 +23,26 @@ exports.createCommentForPost = async (req, res) => {
     }
   };
 
-exports.getCommentsByPostId = async (req, res) => {
-  try {
-    const { postID } = req.params;
-    const comments = await Comment.findAll({
-      where: { postID },
-      include: [{ model: User }, { model: Post }],
-    });
-    res.json(comments);
-  } catch (error) {
-    console.error('Error fetching comments:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
+  exports.getCommentsByPostId = async (req, res) => {
+    try {
+      const { postId } = req.params;
+      const comments = await Comment.findAll({
+        where: { postID: postId },
+        include: [
+          { model: User, attributes: ['userID', 'username'] },
+        ],
+      });
+  
+      if (comments.length === 0) {
+        return res.status(404).json({ error: 'No comments found for this post.' });
+      }
+  
+      res.json(comments);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
 
 exports.updateComment = async (req, res) => {
   try {

@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Comment = sequelize.define('Comment', {
+const Comment = sequelize.define('Comments', {
   commentID: {
     type: DataTypes.INTEGER,
     autoIncrement: true,

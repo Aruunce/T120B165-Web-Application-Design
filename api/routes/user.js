@@ -7,7 +7,9 @@ const {
   getAllUsers,
   registerUser,
   deleteUser,
-  getUserPosts
+  getUserPosts,
+  updateUserProfile,
+  getUserById
 } = require('../controllers/UserController');
 
 /**
@@ -22,6 +24,7 @@ const {
  * /login:
  *   post:
  *     summary: Log in a user
+ *     tags: [Users]
  *     description: Authenticates a user with their username and password, and returns a JWT token if the credentials are valid.
  *     requestBody:
  *       required: true
@@ -75,9 +78,10 @@ router.post('/login', loginUser);
 
 /**
  * @swagger
- * /users:
+ * /register:
  *   post:
  *     summary: Register a new user
+ *     tags: [Users]
  *     description: Creates a new user account with the provided details. The user role defaults to 'user' if not specified.
  *     requestBody:
  *       required: true
@@ -146,6 +150,7 @@ router.post('/register', registerUser);
  * /users/me:
  *   get:
  *     summary: Get current user's profile
+*      tags: [Users]
  *     description: Retrieves the profile information of the currently authenticated user.
  *     security:
  *       - bearerAuth: []
@@ -177,13 +182,14 @@ router.post('/register', registerUser);
  *                   type: string
  *                   example: Internal server error
  */
-router.get('/profile', auth, getUserProfile);
+router.get('/users/me', auth, getUserProfile);
 
 /**
  * @swagger
  * /users:
  *   get:
  *     summary: Get all users
+ *     tags: [Users]
  *     description: Retrieves a list of all users from the database.
  *     responses:
  *       200:
@@ -205,13 +211,14 @@ router.get('/profile', auth, getUserProfile);
  *                   type: string
  *                   example: Internal server error
  */
-router.get('/allUsers', getAllUsers);
+router.get('/users', getAllUsers);
 
 /**
  * @swagger
  * /users/{id}/posts:
  *   get:
  *     summary: Get all posts by a user
+ *     tags: [Users]
  *     description: Retrieves all posts made by a specific user.
  *     parameters:
  *       - name: id
@@ -273,6 +280,7 @@ router.get('/users/:id/posts', getUserPosts);
  * /users/{id}:
  *   delete:
  *     summary: Delete a user
+*      tags: [Users]
  *     description: Deletes a user by their ID. Only admins or the user themselves can perform this action.
  *     parameters:
  *       - name: id
@@ -317,6 +325,112 @@ router.get('/users/:id/posts', getUserPosts);
  *                   example: Internal server error
  */
 router.delete('/users/:id', deleteUser);
+
+/**
+ * @swagger
+ * /users/me:
+ *   put:
+ *     summary: Update current user's profile
+ *     tags: [Users]
+ *     description: Updates the profile information of the currently authenticated user.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Doe
+ *               email:
+ *                 type: string
+ *                 example: john.doe@example.com
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Profile updated successfully
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       404:
+ *         description: Not Found. The user profile could not be found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: User not found
+ *       500:
+ *         description: Internal Server Error. An error occurred while processing the request.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ */
+router.put('/users/me', auth, updateUserProfile);
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Get user by ID
+ *     tags: [Users]
+ *     description: Retrieves the profile information of a user by their ID.
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The ID of the user to retrieve
+ *         schema:
+ *           type: integer
+ *           format: int64
+ *     responses:
+ *       200:
+ *         description: The profile information of the user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: Not Found. The user with the specified ID does not exist.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: User not found
+ *       500:
+ *         description: Internal Server Error. An error occurred while processing the request.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ */
+router.get('/users/:id', getUserById);
 
 /**
  * @swagger

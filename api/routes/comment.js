@@ -50,6 +50,8 @@ const router = express.Router();
  *                   $ref: '#/components/schemas/Comment'
  *       404:
  *         description: Post not found
+ *       400:
+ *         description: Comments can only be added to idea posts
  *       500:
  *         description: Internal server error
  */
@@ -78,7 +80,7 @@ router.post('/posts/:postId/comments', commentController.createCommentForPost);
  *               items:
  *                 $ref: '#/components/schemas/Comment'
  *       404:
- *         description: Post not found
+ *         description: No comments found for this post
  *       500:
  *         description: Internal server error
  */
@@ -157,24 +159,23 @@ router.delete('/comments/:id', commentController.deleteComment);
  *     Comment:
  *       type: object
  *       properties:
- *         id:
- *           type: integer
- *           example: 1
- *         content:
- *           type: string
- *           example: "This is a comment."
- *         userID:
+ *         commentID:
  *           type: integer
  *           example: 1
  *         postID:
  *           type: integer
  *           example: 1
- *         createdAt:
+ *         userID:
+ *           type: integer
+ *           example: 1
+ *         content:
  *           type: string
- *           format: date-time
- *         updatedAt:
- *           type: string
- *           format: date-time
+ *           example: "This is a comment."
+ *       required:
+ *         - commentID
+ *         - postID
+ *         - userID
+ *         - content
  */
 
 module.exports = router;
