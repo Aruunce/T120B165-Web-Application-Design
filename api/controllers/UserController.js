@@ -1,6 +1,7 @@
 const { User, Role, Post } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { Op } = require('sequelize');
 
 exports.loginUser = async (req, res) => {
   try {
