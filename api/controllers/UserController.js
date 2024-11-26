@@ -1,4 +1,4 @@
-const { User, Role, Post } = require('../models');
+const { User, Role, Post, LikeRetweet } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
@@ -22,7 +22,7 @@ exports.loginUser = async (req, res) => {
       role: user.Role.roleName,
     };
 
-    const token = jwt.sign(userData, process.env.JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign(userData, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
 
     res.json({ token, user: userData });
   } catch (error) {
@@ -187,3 +187,91 @@ exports.getUserById = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+exports.getUserPostsAndLikes = async (req, res) => {
+  try {
+    const { userID } = req.params;
+
+    const user = await User.findByPk(userID, {
+      include: [{
+        model: Post,
+        include: [{
+          model: LikeRetweet,
+        }]
+      }]
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user posts and likes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+
+exports.getUserPostsAndLikesByID = async (req, res) => {
+  try {
+    const { userID, postID } = req.params;
+
+    const user = await User.findByPk(userID, {
+      include: [{
+        model: Post,
+        where: postID ? { id: postID } : {},
+        include: [{
+          model: LikeRetweet,
+        }]
+      }]
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user posts and likes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+exports.getUserPostsAndLikesByID = async (req, res) => {
+  try {
+    const { userID, postID } = req.params; // Extract userID and postID from request params
+
+    // Fetch the user by their userID
+    const user = await User.findByPk(userID);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const posts = await Post.findAll({
+      where: {
+        userId: userID,
+        ...(postID && { postID: postID }),
+      },
+      include: [{
+        model: LikeRetweet,
+      }]
+    });
+
+    if (postID && posts.length === 0) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    res.json({
+      user,
+      posts,
+    });
+  } catch (error) {
+    console.error('Error fetching user posts and likes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+

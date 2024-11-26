@@ -1,6 +1,7 @@
 const express = require('express');
 const postController = require('../controllers/PostController');
 const router = express.Router();
+const auth = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -47,7 +48,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.post('/posts', postController.createPost);
+router.post('/posts', auth, postController.createPost);
 
 /**
  * @swagger
@@ -68,6 +69,26 @@ router.post('/posts', postController.createPost);
  *         description: Internal server error
  */
 router.get('/posts', postController.getAllPosts);
+
+/**
+ * @swagger
+ * /posts/recent:
+ *   get:
+ *     summary: Get recent posts
+ *     tags: [Posts]
+ *     responses:
+ *       200:
+ *         description: List of recent posts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Post'
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/posts/recent', postController.getRecentPosts);
 
 /**
  * @swagger
@@ -95,6 +116,7 @@ router.get('/posts', postController.getAllPosts);
  *         description: Internal server error
  */
 router.get('/posts/:id', postController.getPostById);
+
 
 /**
  * @swagger
@@ -140,7 +162,7 @@ router.get('/posts/:id', postController.getPostById);
  *       500:
  *         description: Internal server error
  */
-router.put('/posts/:id', postController.updatePost);
+router.put('/posts/:id', auth, postController.updatePost);
 
 /**
  * @swagger
@@ -163,7 +185,7 @@ router.put('/posts/:id', postController.updatePost);
  *       500:
  *         description: Internal server error
  */
-router.delete('/posts/:id', postController.deletePost);
+router.delete('/posts/:id', auth, postController.deletePost);
 
 /**
  * @swagger

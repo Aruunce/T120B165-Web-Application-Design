@@ -9,7 +9,9 @@ const {
   deleteUser,
   getUserPosts,
   updateUserProfile,
-  getUserById
+  getUserById,
+  getUserPostsAndLikes,
+  getUserPostsAndLikesByID
 } = require('../controllers/UserController');
 
 /**
@@ -431,6 +433,11 @@ router.put('/users/me', auth, updateUserProfile);
  *                   example: Internal server error
  */
 router.get('/users/:id', getUserById);
+
+
+router.get('/users/:userID/posts-likes', getUserPostsAndLikes);
+
+router.get('/users/:userID/post-likes/:postID', getUserPostsAndLikesByID);
 
 /**
  * @swagger

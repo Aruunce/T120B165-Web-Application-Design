@@ -1,5 +1,6 @@
 const express = require('express');
 const commentController = require('../controllers/CommentController');
+const auth = require('../middlewares/auth');
 const router = express.Router();
 
 /**
@@ -151,6 +152,72 @@ router.put('/comments/:id', commentController.updateComment);
  *         description: Internal server error
  */
 router.delete('/comments/:id', commentController.deleteComment);
+
+/**
+ * @swagger
+ * /comments/{commentID}/like:
+ *   post:
+ *     summary: Like a comment
+ *     tags: [Comments]
+ *     parameters:
+ *       - name: commentID
+ *         in: path
+ *         required: true
+ *         description: The ID of the comment to like
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Comment liked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Comment liked successfully"
+ *                 comment:
+ *                   $ref: '#/components/schemas/Comment'
+ *       404:
+ *         description: Comment not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/comments/:commentID/like', auth, commentController.likeComment);
+
+/**
+ * @swagger
+ * /comments/{commentID}/upvote:
+ *   post:
+ *     summary: Upvote a comment
+ *     tags: [Comments]
+ *     parameters:
+ *       - name: commentID
+ *         in: path
+ *         required: true
+ *         description: The ID of the comment to upvote
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Comment upvoted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Comment upvoted successfully"
+ *                 comment:
+ *                   $ref: '#/components/schemas/Comment'
+ *       404:
+ *         description: Comment not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/comments/:commentID/upvote', auth, commentController.upvoteComment);
 
 /**
  * @swagger

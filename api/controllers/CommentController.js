@@ -79,3 +79,41 @@ exports.deleteComment = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+exports.upvoteComment = async (req, res) => {
+  try {
+    const { commentID } = req.params;
+    const comment = await Comment.findByPk(commentID);
+
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
+    comment.upvotes = (comment.upvotes || 0) + 1;
+    await comment.save();
+
+    res.json({ message: 'Comment upvoted successfully', comment });
+  } catch (error) {
+    console.error('Error upvoting comment:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.likeComment = async (req, res) => {
+  try {
+    const { commentID } = req.params;
+    const comment = await Comment.findByPk(commentID);
+
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
+    comment.likes = (comment.likes || 0) + 1;
+    await comment.save();
+
+    res.json({ message: 'Comment liked successfully', comment });
+  } catch (error) {
+    console.error('Error liking comment:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

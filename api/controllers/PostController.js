@@ -1,4 +1,4 @@
-const { Post, User } = require('../models');
+const { Post, User, Comment } = require('../models');
 
 exports.createPost = async (req, res) => {
   try {
@@ -70,6 +70,23 @@ exports.deletePost = async (req, res) => {
     res.status(204).send();
   } catch (error) {
     console.error('Error deleting post:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.getRecentPosts = async (req, res) => {
+  try {
+    const posts = await Post.findAll({
+      order: [['createdAt', 'DESC']],
+      limit: 10, // Adjust the limit as needed
+      include: [
+        { model: User, attributes: ['username'] },
+        { model: Comment, attributes: ['commentID'] }
+      ],
+    });
+    res.json(posts);
+  } catch (error) {
+    console.error('Error fetching recent posts:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
