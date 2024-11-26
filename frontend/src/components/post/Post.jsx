@@ -9,6 +9,11 @@ import '../../style/Modal.css';
 import '../../style/Post.css';
 import axios from '../../utils/axiosConfig';
 
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
 const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [postData, setPostData] = useState(post);
@@ -92,7 +97,30 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
           </span>
         </div>
         <div className="post-content">
-          {post.content}
+        <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              code({node, inline, className, children, ...props}) {
+                const match = /language-(\w+)/.exec(className || '');
+                return !inline && match ? (
+                  <SyntaxHighlighter
+                    style={tomorrow}
+                    language={match[1]}
+                    PreTag="div"
+                    {...props}
+                  >
+                    {String(children).replace(/\n$/, '')}
+                  </SyntaxHighlighter>
+                ) : (
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
+                );
+              }
+            }}
+          >
+            {post.content}
+          </ReactMarkdown>
         </div>
         <div className="post-footer">
           <span className="icon-wrapper comment" onClick={(e) => { e.stopPropagation(); openCommentModal(e); }}>
@@ -120,7 +148,30 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
                </span>
              </div>
              <div className="post-content">
-               {selectedPost.content}
+             <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  code({node, inline, className, children, ...props}) {
+                    const match = /language-(\w+)/.exec(className || '');
+                    return !inline && match ? (
+                      <SyntaxHighlighter
+                        style={tomorrow}
+                        language={match[1]}
+                        PreTag="div"
+                        {...props}
+                      >
+                        {String(children).replace(/\n$/, '')}
+                      </SyntaxHighlighter>
+                    ) : (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    );
+                  }
+                }}
+              >
+                {selectedPost.content}
+              </ReactMarkdown>
              </div>
              <div className="post-footer">
                <span className="icon-wrapper comment" onClick={(e) => { e.stopPropagation(); openCommentModal(e); }}>
