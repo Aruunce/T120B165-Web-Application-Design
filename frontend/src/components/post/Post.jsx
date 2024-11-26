@@ -1,18 +1,17 @@
+// FILE: frontend/src/components/post/Post.jsx
+
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart, faRetweet, faComment, faThumbsUp, faLightbulb, faComments } from '@fortawesome/free-solid-svg-icons';
+import { faHeart, faRetweet, faComment, faThumbsUp, faThumbsDown, faLightbulb, faComments } from '@fortawesome/free-solid-svg-icons';
 import Modal from '../Modal';
 import CommentForm from './CommentForm';
 import '../../style/Modal.css';
 import '../../style/Post.css';
 import axios from '../../utils/axiosConfig';
 
-const Post = ({ post, onClick }) => {
-  const [isCommentModalOpen, setCommentModalOpen] = useState(false);
+const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
   const [selectedPost, setSelectedPost] = useState(null);
-
-  const openCommentModal = () => setCommentModalOpen(true);
-  const closeCommentModal = () => setCommentModalOpen(false);
+  const [postData, setPostData] = useState(post);
 
   const handleUpvoteComment = async (commentID) => {
     try {
@@ -23,6 +22,18 @@ const Post = ({ post, onClick }) => {
       post.Comments = updatedComments;
     } catch (error) {
       console.error('Error upvoting comment:', error);
+    }
+  };
+
+  const handleDownvoteComment = async (commentID) => {
+    try {
+      await axios.post(`/comments/${commentID}/downvote`);
+      const updatedComments = post.Comments.map((comment) =>
+        comment.commentID === commentID ? { ...comment, downvotes: (comment.downvotes || 0) + 1 } : comment
+      );
+      post.Comments = updatedComments;a
+    } catch (error) {
+      console.error('Error downvoting comment:', error);
     }
   };
 
@@ -38,63 +49,118 @@ const Post = ({ post, onClick }) => {
     }
   };
 
-  const handlePostClick = () => {
-    setSelectedPost(post);
-    onClick(post);
+  const handleRetweetComment = async (commentID) => {
+    try {
+      await axios.post(`/comments/${commentID}/retweet`);
+      const updatedComments = post.Comments.map((comment) =>
+        comment.commentID === commentID ? { ...comment, retweets: (comment.retweets || 0) + 1 } : comment
+      );
+      post.Comments = updatedComments;
+    } catch (error) {
+      console.error('Error retweeting comment:', error);
+    }
   };
 
+  const handlePostClick = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`/posts/${postData.postID}/details`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setSelectedPost(response.data);
+      setPostData(response.data); // Update local post data with fresh data
+    } catch (error) {
+      console.error('Error fetching post details:', error);
+    }
+  };
+
+  const closePostModal = () => {
+    setSelectedPost(null);
+  };
   return (
     <div>
       <div className="post" onClick={handlePostClick}>
         <div className="post-header">
-          <span className="post-username">{post.User.username}</span>
-          <span className="post-date">{new Date(post.createdAt).toLocaleString()}</span>
+          <span className="post-username">{postData.User.username}</span>
+          <span className="post-date">{new Date(postData.createdAt).toLocaleString()}</span>
           <span className="post-type-icon">
-            {post.postType === 'idea' ? <FontAwesomeIcon icon={faLightbulb} /> : <FontAwesomeIcon icon={faComments} />}
+            {postData.postType === 'idea' ? 
+              <FontAwesomeIcon icon={faLightbulb} /> : 
+              <FontAwesomeIcon icon={faComments} />}
           </span>
         </div>
         <div className="post-content">
           {post.content}
         </div>
         <div className="post-footer">
-          <button className="icon-button" onClick={openCommentModal}>
+          <span className="icon-wrapper comment" onClick={(e) => { e.stopPropagation(); openCommentModal(e); }}>
             <FontAwesomeIcon icon={faComment} /> {post.Comments.length}
-          </button>
-          <button className="icon-button">
-            <FontAwesomeIcon icon={faHeart} /> {post.likeCount}
-          </button>
-          <button className="icon-button">
-            <FontAwesomeIcon icon={faRetweet} /> {post.retweetCount}
-          </button>
-        </div>
-        <div className="post-actions">
-          <button onClick={openCommentModal}><FontAwesomeIcon icon={faComment} /></button>
-          <button><FontAwesomeIcon icon={faHeart} /></button>
-          <button><FontAwesomeIcon icon={faRetweet} /></button>
+          </span>
+          <span className="icon-wrapper like" onClick={(e) => { e.stopPropagation(); onLike(); }}>
+            <FontAwesomeIcon icon={faHeart} /> {post.likeCount || 0}
+          </span>
+          <span className="icon-wrapper retweet" onClick={(e) => { e.stopPropagation(); onRetweet(); }}>
+            <FontAwesomeIcon icon={faRetweet} /> {post.retweetCount || 0}
+          </span>
         </div>
       </div>
-      <Modal isOpen={isCommentModalOpen} onClose={closeCommentModal}>
-        <CommentForm onClose={closeCommentModal} />
-      </Modal>
       {selectedPost && (
-        <Modal isOpen={!!selectedPost} onClose={() => setSelectedPost(null)}>
-          <div className="post-details">
-            <h2>{selectedPost.User.username}</h2>
-            <p>{selectedPost.content}</p>
-            <div className="comments">
-              {selectedPost.Comments.map((comment) => (
-                <div key={comment.commentID} className="comment">
-                  <span>{comment.content}</span>
-                  <div className="comment-actions">
-                    {selectedPost.postType === 'idea' ? (
-                      <button onClick={() => handleLikeComment(comment.commentID)}><FontAwesomeIcon icon={faHeart} /> {comment.likes || 0}</button>
-                    ) : (
-                      <button onClick={() => handleUpvoteComment(comment.commentID)}><FontAwesomeIcon icon={faThumbsUp} /> {comment.upvotes || 0}</button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+         <Modal isOpen={!!selectedPost} onClose={closePostModal}>
+         <div className="post-details">
+           <div className="post">
+             <div className="post-header">
+               <span className="post-username">{selectedPost.User.username}</span>
+               <span className="post-date">{new Date(selectedPost.createdAt).toLocaleString()}</span>
+               <span className="post-type-icon">
+                 {selectedPost.postType === 'idea' ? 
+                   <FontAwesomeIcon icon={faLightbulb} /> : 
+                   <FontAwesomeIcon icon={faComments} />}
+               </span>
+             </div>
+             <div className="post-content">
+               {selectedPost.content}
+             </div>
+             <div className="post-footer">
+               <span className="icon-wrapper comment" onClick={(e) => { e.stopPropagation(); openCommentModal(e); }}>
+                 <FontAwesomeIcon icon={faComment} /> {selectedPost.Comments.length}
+               </span>
+               <span className="icon-wrapper like">
+                 <FontAwesomeIcon icon={faHeart} /> {selectedPost.likeCount || 0}
+               </span>
+               <span className="icon-wrapper retweet">
+                 <FontAwesomeIcon icon={faRetweet} /> {selectedPost.retweetCount || 0}
+               </span>
+             </div>
+           </div>
+           <div className="comments">
+                {selectedPost.Comments && selectedPost.Comments.length > 0 ? (
+                  selectedPost.Comments.map((comment) => (
+                    <div key={comment.commentID} className="comment">
+                      <span>{comment.content}</span>
+                      <div className="comment-actions">
+                        {selectedPost.postType === 'idea' ? (
+                          <span className="icon-wrapper like" onClick={() => handleLikeComment(comment.commentID)}>
+                            <FontAwesomeIcon icon={faHeart} /> {comment.likes || 0}
+                          </span>
+                        ) : (
+                          <>
+                            <span className="icon-wrapper upvote" onClick={() => handleUpvoteComment(comment.commentID)}>
+                              <FontAwesomeIcon icon={faThumbsUp} /> {comment.upvotes || 0}
+                            </span>
+                            <span className="icon-wrapper downvote" onClick={() => handleDownvoteComment(comment.commentID)}>
+                              <FontAwesomeIcon icon={faThumbsDown} /> {comment.downvotes || 0}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p>No comments yet.</p>
+                )}
+              </div>
           </div>
         </Modal>
       )}

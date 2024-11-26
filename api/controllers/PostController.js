@@ -1,4 +1,4 @@
-const { Post, User, Comment } = require('../models');
+const { Post, User, Comment, LikeRetweet } = require('../models');
 
 exports.createPost = async (req, res) => {
   try {
@@ -87,6 +87,47 @@ exports.getRecentPosts = async (req, res) => {
     res.json(posts);
   } catch (error) {
     console.error('Error fetching recent posts:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.getPostWithDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const post = await Post.findByPk(id, {
+      include: [
+        {
+          model: User,
+          attributes: ['username']
+        },
+        {
+          model: Comment,
+          include: [
+            {
+              model: User,
+              attributes: ['username']
+            }
+          ]
+        },
+        {
+          model: LikeRetweet,
+          include: [
+            {
+              model: User,
+              attributes: ['username']
+            }
+          ]
+        }
+      ]
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    res.json(post);
+  } catch (error) {
+    console.error('Error fetching post details:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

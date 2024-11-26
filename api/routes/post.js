@@ -189,6 +189,33 @@ router.delete('/posts/:id', auth, postController.deletePost);
 
 /**
  * @swagger
+ * /posts/{id}/details:
+ *   get:
+ *     summary: Get a post with all its details
+ *     tags: [Posts]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The ID of the post to retrieve
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Post retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       404:
+ *         description: Post not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/posts/:id/details', auth, postController.getPostWithDetails);
+
+/**
+ * @swagger
  * components:
  *   schemas:
  *     Post:
