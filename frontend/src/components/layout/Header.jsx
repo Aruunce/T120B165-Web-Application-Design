@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import '../../style/Header.css';
 
-const Header = ({ openLoginModal, openRegisterModal, userRole, onLogout, username }) => {
+const Header = ({ openLogin, openRegister, userRole, onLogout, username }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
 
   const toggleDropdown = () => {
@@ -18,8 +18,8 @@ const Header = ({ openLoginModal, openRegisterModal, userRole, onLogout, usernam
           <li><a href="/">Home</a></li>
           {userRole === 'guest' ? (
             <>
-              <li><button onClick={openLoginModal}>Login</button></li>
-              <li><button onClick={openRegisterModal}>Register</button></li>
+              <li><button onClick={openLogin}>Login</button></li>
+              <li><button onClick={openRegister}>Register</button></li>
             </>
           ) : (
             <li className="user-menu">
@@ -29,7 +29,10 @@ const Header = ({ openLoginModal, openRegisterModal, userRole, onLogout, usernam
               {isDropdownOpen && (
                 <div className="dropdown-menu">
                   <span>{username}</span>
-                  <button onClick={onLogout}>
+                  <button onClick={() => {
+                    onLogout();
+                    setDropdownOpen(false);
+                  }}>
                     <FontAwesomeIcon icon={faSignOutAlt} /> Logout 
                   </button>
                 </div>

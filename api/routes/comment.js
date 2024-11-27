@@ -14,25 +14,29 @@ const router = express.Router();
  * @swagger
  * /posts/{postId}/comments:
  *   post:
- *     summary: Create a new comment for a specific post
+ *     summary: Create a new comment
  *     tags: [Comments]
  *     parameters:
- *       - name: postId
- *         in: path
+ *       - in: path
+ *         name: postId
  *         required: true
- *         description: The ID of the post to which the comment will be added
  *         schema:
  *           type: integer
+ *         description: The ID of the post to comment on
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - content
+ *               - userID
  *             properties:
  *               content:
  *                 type: string
- *                 example: "This is a comment."
+ *                 minLength: 1
+ *                 example: "This is a comment"
  *               userID:
  *                 type: integer
  *                 example: 1
@@ -48,11 +52,60 @@ const router = express.Router();
  *                   type: string
  *                   example: "Comment created successfully"
  *                 comment:
- *                   $ref: '#/components/schemas/Comment'
+ *                   type: object
+ *                   properties:
+ *                     commentID:
+ *                       type: integer
+ *                     content:
+ *                       type: string
+ *                     User:
+ *                       type: object
+ *                       properties:
+ *                         username:
+ *                           type: string
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *       400:
+ *         description: Bad request (empty comment)
  *       404:
  *         description: Post not found
- *       400:
- *         description: Comments can only be added to idea posts
+ *       500:
+ *         description: Internal server error
+ * 
+ * /posts/{postId}/comments:
+ *   get:
+ *     summary: Get all comments for a post
+ *     tags: [Comments]
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Post ID to get comments for
+ *     responses:
+ *       200:
+ *         description: List of comments
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   commentID:
+ *                     type: integer
+ *                   content:
+ *                     type: string
+ *                   User:
+ *                     type: object
+ *                     properties:
+ *                       username:
+ *                         type: string
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
  *       500:
  *         description: Internal server error
  */

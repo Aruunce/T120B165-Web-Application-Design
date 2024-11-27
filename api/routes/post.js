@@ -193,6 +193,8 @@ router.delete('/posts/:id', auth, postController.deletePost);
  *   get:
  *     summary: Get a post with all its details
  *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - name: id
  *         in: path
@@ -202,11 +204,68 @@ router.delete('/posts/:id', auth, postController.deletePost);
  *           type: integer
  *     responses:
  *       200:
- *         description: Post retrieved successfully
+ *         description: Post retrieved successfully with all details
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Post'
+ *               type: object
+ *               properties:
+ *                 postID:
+ *                   type: integer
+ *                   example: 1
+ *                 content:
+ *                   type: string
+ *                   example: "This is a post"
+ *                 postType:
+ *                   type: string
+ *                   enum: [idea, forum]
+ *                   example: "idea"
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *                 User:
+ *                   type: object
+ *                   properties:
+ *                     username:
+ *                       type: string
+ *                       example: "john_doe"
+ *                 Comments:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       commentID:
+ *                         type: integer
+ *                         example: 1
+ *                       content:
+ *                         type: string
+ *                         example: "This is a comment"
+ *                       User:
+ *                         type: object
+ *                         properties:
+ *                           username:
+ *                             type: string
+ *                             example: "jane_doe"
+ *                 LikeRetweets:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       type:
+ *                         type: string
+ *                         enum: [like, retweet]
+ *                         example: "like"
+ *                       User:
+ *                         type: object
+ *                         properties:
+ *                           username:
+ *                             type: string
+ *                             example: "jane_doe"
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
  *       404:
  *         description: Post not found
  *       500:

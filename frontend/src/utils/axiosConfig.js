@@ -13,10 +13,7 @@ instance.interceptors.request.use(
       const currentTime = Date.now() / 1000;
 
       if (decodedToken.exp < currentTime) {
-        // Token is expired
-        localStorage.removeItem('token');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('username');
+        clearUserData();
         window.location.href = '/';
         return Promise.reject(new Error('Token expired'));
       }
@@ -25,7 +22,25 @@ instance.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    clearUserData();
+    showError('Error connecting to server');
+    return Promise.reject(error);
+  }
+);
+
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.code === 'ERR_NETWORK') {
+      clearUserData();
+      showError('Unable to connect to server');
+    } else if (error.response && error.response.status === 401) {
+      clearUserData();
+      window.location.href = '/';
+    }
+    return Promise.reject(error);
+  }
 );
 
 instance.interceptors.response.use(
@@ -41,5 +56,23 @@ instance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+function clearUserData() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('userRole');
+  localStorage.removeItem('username');
+  localStorage.removeItem('userID');
+}
+
+function showError(message) {
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'api-error';
+  errorDiv.textContent = message;
+  document.body.appendChild(errorDiv);
+  
+  setTimeout(() => {
+    window.location.reload();
+  }, 1000);
+}
 
 export default instance;

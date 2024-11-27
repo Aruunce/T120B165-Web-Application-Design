@@ -5,20 +5,40 @@ const { Comment, Post, User } = require('../models');
     try {
       const { postId } = req.params;
       const { content, userID } = req.body;
-
-      const post = await Post.findByPk(postId);
+  
+      // Input validation
+      if (!content || !content.trim()) {
+        return res.status(400).json({ error: 'Comment content cannot be empty' });
+      }
+  
+      // Find post with user information
+      const post = await Post.findOne({
+        where: { postID: postId },
+        include: [{ model: User }]
+      });
+  
       if (!post) {
         return res.status(404).json({ error: 'Post not found' });
       }
-
-      if (post.postType !== 'idea') {
-        return res.status(400).json({ error: 'Comments can only be added to idea posts.' });
-      }
-
-      const comment = await Comment.create({ content, userID, postID: postId });
-      res.status(201).json({ message: 'Comment created successfully', comment });
+  
+      const comment = await Comment.create({
+        content: content.trim(),
+        userID,
+        postID: postId
+      });
+  
+      // Fetch the created comment with user information
+      const commentWithUser = await Comment.findOne({
+        where: { commentID: comment.commentID },
+        include: [{ model: User, attributes: ['username'] }]
+      });
+  
+      res.status(201).json({
+        message: 'Comment created successfully',
+        comment: commentWithUser
+      });
     } catch (error) {
-      console.error('Error creating comment for post:', error);
+      console.error('Error creating comment:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   };
@@ -26,16 +46,15 @@ const { Comment, Post, User } = require('../models');
   exports.getCommentsByPostId = async (req, res) => {
     try {
       const { postId } = req.params;
+      
       const comments = await Comment.findAll({
         where: { postID: postId },
-        include: [
-          { model: User, attributes: ['userID', 'username'] },
-        ],
+        include: [{ 
+          model: User,
+          attributes: ['username'] 
+        }],
+        order: [['createdAt', 'DESC']]
       });
-  
-      if (comments.length === 0) {
-        return res.status(404).json({ error: 'No comments found for this post.' });
-      }
   
       res.json(comments);
     } catch (error) {

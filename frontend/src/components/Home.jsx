@@ -12,14 +12,85 @@ import axios from '../utils/axiosConfig';
 import PostForm from './post/PostForm';
 
 const Home = () => {
-  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
-  const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
-  const [isCommentModalOpen, setCommentModalOpen] = useState(false);
   const [userRole, setUserRole] = useState('guest');
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState(localStorage.getItem('username') || '');
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [showPostForm, setShowPostForm] = useState(false);
+  const [modalType, setModalType] = useState(null);
+  const [selectedPostForComment, setSelectedPostForComment] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [isFullView, setIsFullView] = useState(false);
+
+  const handleOpenCommentModal = (post) => {
+    setSelectedPostForComment(post);
+    setModalType('comment');
+  };
+
+  const handleCommentSubmitted = async (newComment) => {
+    try {
+      // Update posts state optimistically
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.postID === newComment.postID
+            ? {
+                ...post,
+                Comments: [newComment, ...post.Comments],
+              }
+            : post
+        )
+      );
+    
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 3000);
+  
+      closeModal();
+      
+      // Refresh posts to ensure consistency
+      await fetchRecentPosts();
+    } catch (error) {
+      console.error('Error handling comment submission:', error);
+    }
+  };
+  
+  // Add SuccessMessage component at the top
+  const SuccessMessage = () => (
+    <div className="success-message">
+      Comment posted successfully!
+      <style jsx>{`
+        .success-message {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background-color: #4CAF50;
+          color: white;
+          padding: 15px 30px;
+          border-radius: 4px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+          animation: slideIn 0.3s ease-out;
+          z-index: 1000;
+        }
+        @keyframes slideIn {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
+    </div>
+  );
+
+  useEffect(() => {
+    console.log('Updated posts:', posts);
+  }, [posts]);
+  
   useEffect(() => {
     const role = localStorage.getItem('userRole') || 'guest';
     const storedUsername = localStorage.getItem('username') || '';
@@ -34,90 +105,94 @@ const Home = () => {
   const fetchRecentPosts = async () => {
     try {
       const response = await axios.get('/posts/recent');
-      setPosts(response.data);
+      setPosts(response.data.map(post => ({
+        ...post,
+        Comments: post.Comments || [],
+        User: post.User || { username: 'Anonymous' }
+      })));
     } catch (error) {
       console.error('Error fetching recent posts:', error);
     }
   };
 
-  const openLoginModal = () => setLoginModalOpen(true);
-  const closeLoginModal = () => setLoginModalOpen(false);
-
-  const openRegisterModal = () => setRegisterModalOpen(true);
-  const closeRegisterModal = () => setRegisterModalOpen(false);
-
-  const openCommentModal = (e) => {
-    e.stopPropagation();
-    setCommentModalOpen(true);
+  const openModal = (type) => {
+    setModalType(type);
   };
-  const closeCommentModal = () => setCommentModalOpen(false);
+  
+  const closeModal = () => {
+    setModalType(null);
+    setShowPostForm(false);
+    setSelectedPostForComment(null);
+  };
+
 
   const handleLogin = (role, username) => {
     setUserRole(role);
     setUsername(username);
-    closeLoginModal();
+    closeModal();
     fetchRecentPosts();
   };
 
-  const closePostModal = () => {
-    setSelectedPost(null);
+  const handleRegisterClick = () => {
+    closeModal();
+    openModal('register');
   };
 
   const handleCreatePost = async (postData) => {
     try {
-      const response = await axios.post('/posts', {
-        ...postData,
-        userId: localStorage.getItem('userID')
-      });
-      setPosts([response.data, ...posts]);
-      setShowPostForm(false);
+      const response = await axios.post('/posts', postData);
+      const newPost = {
+        ...response.data.post,
+        User: { username: username || localStorage.getItem('username') },
+        Comments: [],
+        likeCount: 0,
+        retweetCount: 0,
+      };
+  
+      // Add new post to state
+      setPosts((prevPosts) => [newPost, ...prevPosts]);
+      
+      // Close create post modal
+      closeModal();
+      
+      // Show success message
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 3000);
+  
+      // Open post in full screen view
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+      return (
+        <div className="full-screen-post">
+          <Post 
+            post={newPost}
+            isFullView={true}
+            openCommentModal={handleOpenCommentModal}
+            onLike={() => handleLikePost(newPost.postID)}
+            onRetweet={() => handleRetweetPost(newPost.postID)}
+          />
+        </div>
+      );
+  
     } catch (error) {
       console.error('Error creating post:', error);
+      throw error;
     }
   };
 
-const handleLikePost = async (postId) => {
-  try {
-    const userId = localStorage.getItem('userID');
-    await axios.post(`/posts/${postId}/like-retweet`, {
-      userId,
-      type: 'like'
-    });
-    // Update post in state
-    setPosts(posts.map(post => 
-      post.postID === postId 
-        ? { ...post, likeCount: (post.likeCount || 0) + 1 }
-        : post
-    ));
-  } catch (error) {
-    console.error('Error liking post:', error);
-  }
-};
-
-const handleRetweetPost = async (postId) => {
-  try {
-    const userId = localStorage.getItem('userID');
-    await axios.post(`/posts/${postId}/like-retweet`, {
-      userId,
-      type: 'retweet'
-    });
-    // Update post in state
-    setPosts(posts.map(post => 
-      post.postID === postId 
-        ? { ...post, retweetCount: (post.retweetCount || 0) + 1 }
-        : post
-    ));
-  } catch (error) {
-    console.error('Error retweeting post:', error);
-  }
-};
   return (
     <div id="root">
+      {showSuccess && <SuccessMessage />}
       <Header 
-        openLoginModal={openLoginModal} 
-        openRegisterModal={openRegisterModal} 
+        openLogin={() => openModal('login')}
+        openRegister={() => openModal('register')}
         userRole={userRole} 
-        onLogout={() => {}} 
+        onLogout={() => {
+          localStorage.clear();
+          setUserRole('guest');
+          setUsername('');
+        }}
         username={username} 
       />
       <main className="content">
@@ -125,57 +200,73 @@ const handleRetweetPost = async (postId) => {
           <h1>Welcome to Postoria</h1>
         ) : (
           <div>
-            <button 
-              className="create-post-btn"
-              onClick={() => setShowPostForm(true)}
-            >
-            Create New Post
-          </button>
-          {showPostForm && (
-            <Modal isOpen={showPostForm} onClose={() => setShowPostForm(false)}>
-              <PostForm onSubmit={handleCreatePost} />
-            </Modal>
-          )}
-          <div className="posts">
-            {posts.map((post) => (
-              <Post 
-                key={post.postID} 
-                post={post} 
-                openCommentModal={openCommentModal}
-                onLike={() => handleLikePost(post.postID)}
-                onRetweet={() => handleRetweetPost(post.postID)}
-              />
-            ))}
-          </div>
-            {selectedPost && (
-              <Modal isOpen={!!selectedPost} onClose={closePostModal}>
-                <Post 
-                  post={selectedPost} 
-                  onClick={() => {}} 
-                  openCommentModal={openCommentModal}
-                  onLike={() => handleLikePost(selectedPost.postID)}
-                  onRetweet={() => handleRetweetPost(selectedPost.postID)} 
-                />
-              </Modal>
+            {!isFullView && (
+              <button className="create-post-btn" onClick={() => {/* Create post logic here */}}>
+                Create New Post
+              </button>
             )}
+            <div className="posts">
+              {posts.map((post) => (
+                <Post 
+                  key={post.postID} 
+                  post={post}
+                  openCommentModal={handleOpenCommentModal}
+                  onLike={() => handleLikePost(post.postID)}
+                  onRetweet={() => handleRetweetPost(post.postID)}
+                />
+              ))}
+            </div>
           </div>
         )}
       </main>
       <Footer />
-      <Modal isOpen={isLoginModalOpen} onClose={closeLoginModal}>
-        <LoginForm onClose={closeLoginModal} onLogin={handleLogin} />
-      </Modal>
-      <Modal isOpen={isRegisterModalOpen} onClose={closeRegisterModal}>
-        <RegisterForm onClose={closeRegisterModal} />
-      </Modal>
-      <Modal isOpen={isCommentModalOpen} onClose={closeCommentModal}>
-        <CommentForm onClose={closeCommentModal} />
-      </Modal>
-      {selectedPost && (
-        <Modal isOpen={!!selectedPost} onClose={closePostModal}>
-          <Post post={selectedPost} onClick={() => {}} openCommentModal={openCommentModal} />
-        </Modal>
+      <Modal isOpen={!!modalType} onClose={closeModal}>
+        {modalType === 'login' && (
+          <LoginForm 
+            onClose={closeModal} 
+            onLogin={handleLogin}
+            onRegisterClick={handleRegisterClick}
+          />
+        )}
+       {modalType === 'register' && (
+          <RegisterForm 
+            onClose={closeModal} 
+            onLoginClick={() => {
+              closeModal();
+              openModal('login');
+            }}
+          />
+        )}
+      {modalType === 'comment' && selectedPostForComment && (
+        <div className="modal-content">
+          <CommentForm
+              postID={selectedPostForComment.postID}
+              onClose={() => closeModal()}
+              onCommentSubmitted={(newComment) =>
+                handleCommentSubmitted(newComment, selectedPostForComment.postID)
+              }
+            />
+        </div>
+        )}
+        {(modalType === 'createPost' || showPostForm) && (
+          <PostForm 
+            onSubmit={handleCreatePost} 
+            onClose={() => {
+              setShowPostForm(false);
+              closeModal();
+            }} 
+          />
+        )}
+       {modalType === 'viewPost' && selectedPostForComment && (
+        <Post 
+          post={selectedPostForComment}
+          isFullView={true}
+          openCommentModal={handleOpenCommentModal}
+          onLike={() => handleLikePost(selectedPostForComment.postID)}
+          onRetweet={() => handleRetweetPost(selectedPostForComment.postID)}
+        />
       )}
+      </Modal>
     </div>
   );
 };

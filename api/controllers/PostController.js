@@ -4,11 +4,26 @@ exports.createPost = async (req, res) => {
   try {
     const { content, postType, userID } = req.body;
 
-    const post = await Post.create({ content, postType, userID });
+    // Verify user exists before creating post
+    const user = await User.findByPk(userID);
+    if (!user) {
+      return res.status(400).json({ 
+        error: 'Invalid user ID. Please login again.' 
+      });
+    }
+
+    const post = await Post.create({ 
+      content, 
+      postType, 
+      userID: parseInt(userID) 
+    });
+    
     res.status(201).json({ message: 'Post created successfully', post });
   } catch (error) {
     console.error('Error creating post:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      error: 'Failed to create post. Please try again.' 
+    });
   }
 };
 
@@ -78,11 +93,21 @@ exports.getRecentPosts = async (req, res) => {
   try {
     const posts = await Post.findAll({
       order: [['createdAt', 'DESC']],
-      limit: 10, // Adjust the limit as needed
       include: [
-        { model: User, attributes: ['username'] },
-        { model: Comment, attributes: ['commentID'] }
-      ],
+        { 
+          model: User, 
+          attributes: ['username'] 
+        },
+        { 
+          model: Comment,
+          include: [
+            {
+              model: User,
+              attributes: ['username']
+            }
+          ]
+        }
+      ]
     });
     res.json(posts);
   } catch (error) {

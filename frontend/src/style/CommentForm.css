@@ -1,44 +1,96 @@
+/* Update CommentForm.css */
 .comment-form {
-    background-color: var(--modal-background-color);
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .comment-form h2 {
-    margin-bottom: 1rem;
-    color: var(--text-color);
-  }
-  
-  .comment-form form {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .comment-form textarea {
-    padding: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-    resize: vertical;
-    min-height: 100px;
-  }
-  
-  .form-actions {
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .form-actions button {
-    background-color: var(--secondary-color);
-    color: var(--text-color);
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .form-actions button:hover {
-    background-color: var(--button-hover-color);
-  }
+  background-color: var(--modal-background-color);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  width: 80%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.comment-form h2 {
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.comment-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.comment-form textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--text-color);
+  resize: vertical;
+  font-size: 1rem;
+  line-height: 1.5;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  font-variant: robot;
+}
+
+.comment-form textarea:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.submit-button, .cancel-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 100px;
+}
+
+.submit-button {
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+}
+
+.cancel-button {
+  background-color: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: var(--button-hover-color);
+  transform: translateY(-1px);
+}
+
+.cancel-button:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.submit-button:disabled,
+.cancel-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background-color: rgba(255, 68, 68, 0.1);
+  color: #ff4444;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
