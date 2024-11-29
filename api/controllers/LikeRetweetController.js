@@ -84,20 +84,44 @@ exports.unlikeOrUnretweetPost = async (req, res) => {
 exports.getLikesAndRetweetsForPost = async (req, res) => {
   try {
     const { postId } = req.params;
-
-    // Validate post exists
+    const userId = req.query.userId;
+    
     const post = await Post.findByPk(postId);
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    // Get all likes and retweets for the post
-    const actions = await LikeRetweet.findAll({
-      where: { postID: postId },
-      include: { model: User, attributes: ['userID', 'username'] },
+    // Get all likes and retweets
+    const likes = await LikeRetweet.findAll({
+      where: { 
+        postID: postId,
+        type: 'like'
+      },
+      include: { model: User, attributes: ['userID', 'username'] }
     });
 
-    res.json(actions);
+    const retweets = await LikeRetweet.findAll({
+      where: { 
+        postID: postId,
+        type: 'retweet'
+      },
+      include: { model: User, attributes: ['userID', 'username'] }
+    });
+
+    // Check if current user has liked/retweeted
+    const parsedUserId = parseInt(userId);
+    const userLike = likes.find(action => action.userID === parsedUserId);
+    const userRetweet = retweets.find(action => action.userID === parsedUserId);
+
+    res.json({
+      likes,
+      retweets,
+      isLiked: !!userLike,
+      isRetweeted: !!userRetweet,
+      likeCount: likes.length,
+      retweetCount: retweets.length
+    });
+
   } catch (error) {
     console.error('Error fetching likes and retweets:', error);
     res.status(500).json({ error: 'Internal server error' });

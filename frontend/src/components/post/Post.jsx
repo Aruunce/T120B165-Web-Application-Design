@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef  } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faLightbulb, 
@@ -15,12 +15,19 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 import Modal from '../Modal';
+import axios from '../../utils/axiosConfig';
 
 const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFullView, setIsFullView] = useState(false);
   const [commentActionStates, setCommentActionStates] = useState({});
+  const [isLiked, setIsLiked] = useState(false);
+  const [error, setError] = useState(null);
+  const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const [isRetweeted, setIsRetweeted] = useState(false);
+  const [isRetweetLoading, setIsRetweetLoading] = useState(false)
+  const commentsEndRef = useRef(null);
   const [postData, setPostData] = useState({
     ...post,
     Comments: post?.Comments || [],
@@ -29,38 +36,125 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
     User: post?.User || { username: 'Anonymous' }
   });
 
+  const refreshPostData = async () => {
+    try {
+      const response = await axios.get(`/posts/${post.postID}`);
+      setPostData(response.data);
+      setSelectedPost(response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error refreshing post:', error);
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchPostData = async () => {
+      if (!post?.postID) return;
+      
+      try {
+        setIsLoading(true);
+        setError(null);
+        const userId = localStorage.getItem('userID');
+        const response = await axios.get(`/posts/${post.postID}/like-retweet`, {
+          params: { userId }
+        });
+        console.log(response.data);
+        if (isMounted) {
+          setIsLiked(response.data.isLiked);
+          setIsRetweeted(response.data.isRetweeted);
+          setPostData(prev => ({
+            ...prev,
+            likeCount: response.data.likeCount || 0,
+            retweetCount: response.data.retweetCount || 0
+          }));
+        }
+      } catch (error) {
+        if (isMounted) {
+          setError('Failed to load post data');
+          console.error('Error loading post:', error);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchPostData();
+    return () => { isMounted = false; };
+  }, [post?.postID]);
+
+
   const closePostModal = () => {
     setSelectedPost(null);
     setIsFullView(false);
   };
 
-  const handleCommentSubmitted = (newComment) => {
-    setPostData(prevData => ({
-      ...prevData,
-      Comments: [newComment, ...prevData.Comments]
-    }));
+  const handleCommentSubmitted = async (newComment) => {
+    try {
+      setIsCommentLoading(true);
+      
+      // Optimistically add comment to UI
+      const tempComment = {
+        ...newComment,
+        commentID: `temp-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        User: {
+          username: localStorage.getItem('username')
+        }
+      };
+
+      setPostData(prev => ({
+        ...prev,
+        Comments: [tempComment, ...prev.Comments]
+      }));
+
+      // Get fresh data from server
+      const response = await axios.get(`/posts/${post.postID}`);
+      
+      // Update with server data
+      setPostData(response.data);
+
+      // Scroll to new comment
+      setTimeout(() => {
+        commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+
+      // Optionally force page refresh
+      // window.location.reload();
+
+    } catch (error) {
+      console.error('Error handling comment:', error);
+      alert('Failed to post comment. Please try again.');
+    } finally {
+      setIsCommentLoading(false);
+    }
   };
 
   useEffect(() => {
-    if (post) {
-      setPostData({
-        ...post,
-        Comments: post.Comments?.map(comment => ({
-          ...comment,
-          User: comment.User || { username: 'Anonymous' },
-          content: comment.content?.trim() || '', // Trim whitespace
-          createdAt: comment.createdAt || new Date(),
-          likes: comment.likes || 0,
-          upvotes: comment.upvotes || 0,
-          downvotes: comment.downvotes || 0
-        })) || [],
-        likeCount: post.likeCount || 0,
-        retweetCount: post.retweetCount || 0,
-        User: {
-          username: post.User?.username || post.username || 'Anonymous'
-        }
-      });
-      setIsLoading(false);
+    const checkLikeStatus = async () => {
+      try {
+        const userId = localStorage.getItem('userID');
+        const response = await axios.get(`/posts/${post.postID}/like-retweet`, {
+          params: { userId }
+        });
+        
+        setIsLiked(response.data.isLiked);
+        setPostData(prev => ({
+          ...prev,
+          likeCount: response.data.likeCount,
+          retweetCount: response.data.retweetCount
+        }));
+      } catch (error) {
+        console.error('Error checking like status:', error);
+      }
+    };
+
+    if (post?.postID) {
+      checkLikeStatus();
     }
   }, [post]);
   
@@ -88,6 +182,33 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
     
     try {
       setCommentActionStates(prev => ({ ...prev, [commentId]: true }));
+      const userId = localStorage.getItem('userID');
+      
+      const response = await axios.post(`/comments/${commentId}/votes`, {
+        userId,
+        type: action
+      });
+
+      // Update comment votes in state with immediate feedback
+      setPostData(prev => ({
+        ...prev,
+        Comments: prev.Comments.map(comment => {
+          if (comment.commentID === commentId) {
+            return {
+              ...comment,
+              upvotes: response.data.upvotes,
+              downvotes: response.data.downvotes,
+              userVote: response.data.userVote
+            };
+          }
+          return comment;
+        }).sort((a, b) => {
+          const aVotes = (a.upvotes || 0) - (a.downvotes || 0);
+          const bVotes = (b.upvotes || 0) - (b.downvotes || 0);
+          return bVotes - aVotes;
+        })
+      }));
+
     } catch (error) {
       console.error(`Error handling comment ${action}:`, error);
     } finally {
@@ -101,13 +222,91 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
     return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD format
   };
 
+  const handleLike = async () => {
+    if (isLikeLoading) return;
+    
+    try {
+      setIsLikeLoading(true);
+      const userId = localStorage.getItem('userID');
+      
+      if (isLiked) {
+        await axios.delete(`/posts/${postData.postID}/like-retweet`, {
+          params: { userId, type: 'like' }
+        });
+        setPostData(prev => ({
+          ...prev,
+          likeCount: Math.max(0, prev.likeCount - 1)
+        }));
+        setIsLiked(false);
+      } else {
+        await axios.post(`/posts/${postData.postID}/like-retweet`, {
+          userId,
+          type: 'like'
+        });
+        setPostData(prev => ({
+          ...prev,
+          likeCount: prev.likeCount + 1
+        }));
+        setIsLiked(true);
+      }
+    } catch (error) {
+      console.error('Error handling like:', error);
+    } finally {
+      setIsLikeLoading(false);
+    }
+  };
+
+  const handleRetweet = async () => {
+    if (isRetweetLoading) return;
+    
+    try {
+      setIsRetweetLoading(true);
+      const userId = localStorage.getItem('userID');
+      
+      if (isRetweeted) {
+        await axios.delete(`/posts/${postData.postID}/like-retweet`, {
+          params: { userId, type: 'retweet' }
+        });
+        setPostData(prev => ({
+          ...prev,
+          retweetCount: Math.max(0, prev.retweetCount - 1)
+        }));
+        setIsRetweeted(false);
+      } else {
+        await axios.post(`/posts/${postData.postID}/like-retweet`, {
+          userId,
+          type: 'retweet'
+        });
+        setPostData(prev => ({
+          ...prev,
+          retweetCount: prev.retweetCount + 1
+        }));
+        setIsRetweeted(true);
+      }
+    } catch (error) {
+      console.error('Error handling retweet:', error);
+    } finally {
+      setIsRetweetLoading(false);
+    }
+  };
+
   const currentUsername = localStorage.getItem('username');
   const isCurrentUserPost = postData?.User?.username === currentUsername;
+
+  if (error) {
+    return <div className="post error">{error}</div>;
+  }
 
   if (isLoading) {
     return <div className="post loading">Loading...</div>;
   }
 
+  const scrollToNewComment = () => {
+    setTimeout(() => {
+      commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100); // Small delay to ensure DOM update
+  };
+  
   if (isFullView) {
     return (
       <div className="post-full-view">
@@ -162,58 +361,102 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
             >
               {postData.content}
             </ReactMarkdown>
-          </div>
-          <div className="post-footer">
-           <span className="icon-wrapper comment" onClick={handleCommentClick}>
-              <FontAwesomeIcon icon={faComment} /> {postData.Comments.length}
-            </span>
-            <span className="icon-wrapper like" onClick={(e) => { e.stopPropagation(); onLike(postData); }}>
-              <FontAwesomeIcon icon={faHeart} /> {postData.likeCount}
-            </span>
-            <span className="icon-wrapper retweet" onClick={(e) => { e.stopPropagation(); onRetweet(postData); }}>
-              <FontAwesomeIcon icon={faRetweet} /> {postData.retweetCount}
-            </span>
-          </div>
+           <div className="post-footer">
+              <span 
+                className="icon-wrapper comment" 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  openCommentModal(postData); 
+                }}
+              >
+                <FontAwesomeIcon icon={faComment} /> 
+                {postData.Comments.length}
+              </span>
+              
+              <span 
+                className={`icon-wrapper like ${isLiked ? 'active' : ''}`}
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  onLike(postData); 
+                }}
+              >
+                <FontAwesomeIcon 
+                  icon={faHeart} 
+                  className={isLiked ? 'liked' : ''} 
+                /> 
+                {postData.likeCount}
+              </span>
+              
+              <span 
+                className={`icon-wrapper retweet ${isRetweeted ? 'active' : ''} ${isRetweetLoading ? 'loading' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRetweet();
+                }}
+              >
+                <FontAwesomeIcon 
+                  icon={faRetweet} 
+                  className={isRetweeted ? 'retweeted' : ''} 
+                />
+                <span className="count">{postData.retweetCount}</span>
+              </span>
+            </div>
+        </div>
           <div className="comments-section">
-            <h3>Comments</h3>
+            <h3>Comments ({postData.Comments.length})</h3>
             <div className="comments">
               {postData?.Comments?.length > 0 ? (
-                postData.Comments.map((comment) => (
-                  <div key={comment.commentID} className="comment">
-                    <div className="comment-header">
+                postData.Comments.map((comment, index) => (
+                  <div 
+                      key={comment.commentID || `temp-${Date.now()}`}
+                      className="comment"
+                      ref={index === 0 ? commentsEndRef : null}
+                    >
+                  <div className="comment-header">
                     <div className="comment-meta">
                     <span className="comment-username">
                       {comment.User?.username || 'Anonymous'}
                       </span>
                       <span className="comment-date">
-                        Written: {formatDate(comment.createdAt)}
+                        {formatDate(comment.createdAt)}
                       </span>
                     </div>
                     </div>
                     <div className="comment-content">
                       {comment.content}
                     </div>
-                    <div className="comment-actions">
+                    <div className="post-actions">
                       {postData.postType === 'idea' ? (
-                        <span 
-                          className={`icon-wrapper like ${commentActionStates[comment.commentID] ? 'loading' : ''}`}
-                          onClick={() => handleCommentAction(comment.commentID, 'like')}
-                        >
-                          <FontAwesomeIcon icon={faHeart} /> {comment.likes || 0}
+                       <span 
+                        className={`icon-wrapper like ${isLiked ? 'active' : ''}`} 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          handleLike(postData); 
+                        }}
+                      >
+                           <FontAwesomeIcon icon={faHeart} />
+                           <span className="action-count">{postData.likeCount || 0}</span>
                         </span>
                       ) : (
                         <>
                           <span 
-                            className={`icon-wrapper upvote ${commentActionStates[comment.commentID] ? 'loading' : ''}`}
+                            className={`icon-wrapper upvote ${comment.userVote === 'upvote' ? 'active' : ''} ${
+                              commentActionStates[comment.commentID] ? 'loading' : ''
+                            }`}
                             onClick={() => handleCommentAction(comment.commentID, 'upvote')}
                           >
-                            <FontAwesomeIcon icon={faThumbsUp} /> {comment.upvotes || 0}
+                            <FontAwesomeIcon icon={faThumbsUp} /> 
+                            <span className="vote-count">{comment.upvotes || 0}</span>
                           </span>
+
                           <span 
-                            className={`icon-wrapper downvote ${commentActionStates[comment.commentID] ? 'loading' : ''}`}
+                            className={`icon-wrapper downvote ${comment.userVote === 'downvote' ? 'active' : ''} ${
+                              commentActionStates[comment.commentID] ? 'loading' : ''
+                            }`}
                             onClick={() => handleCommentAction(comment.commentID, 'downvote')}
                           >
-                            <FontAwesomeIcon icon={faThumbsDown} /> {comment.downvotes || 0}
+                            <FontAwesomeIcon icon={faThumbsDown} /> 
+                            <span className="vote-count">{comment.downvotes || 0}</span>
                           </span>
                         </>
                       )}
@@ -279,16 +522,45 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
             </ReactMarkdown>
           </div>
           <div className="post-footer">
-            <span className="icon-wrapper comment" onClick={(e) => { e.stopPropagation(); openCommentModal(postData); }}>
-              <FontAwesomeIcon icon={faComment} /> {postData.Comments.length}
-            </span>
-            <span className="icon-wrapper like" onClick={(e) => { e.stopPropagation(); onLike(postData); }}>
-              <FontAwesomeIcon icon={faHeart} /> {postData.likeCount}
-            </span>
-            <span className="icon-wrapper retweet" onClick={(e) => { e.stopPropagation(); onRetweet(postData); }}>
-              <FontAwesomeIcon icon={faRetweet} /> {postData.retweetCount}
-            </span>
-          </div>
+              <span 
+                className="icon-wrapper comment" 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  openCommentModal(postData); 
+                }}
+              >
+                <FontAwesomeIcon icon={faComment} /> 
+                {postData.Comments.length}
+              </span>
+              
+              <span 
+                className={`icon-wrapper like ${isLiked ? 'active' : ''} ${isLikeLoading ? 'loading' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isLikeLoading) handleLike();
+                }}
+              >
+                <FontAwesomeIcon 
+                  icon={faHeart} 
+                  className={isLiked ? 'liked' : ''} 
+                />
+                <span className="count">{postData.likeCount}</span>
+              </span>
+              
+              <span 
+                className={`icon-wrapper retweet ${isRetweeted ? 'active' : ''} ${isRetweetLoading ? 'loading' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRetweet();
+                }}
+              >
+                <FontAwesomeIcon 
+                  icon={faRetweet} 
+                  className={isRetweeted ? 'retweeted' : ''} 
+                />
+                <span className="count">{postData.retweetCount}</span>
+              </span>
+            </div>
         </div>
         {selectedPost && (
           <Modal isOpen={!!selectedPost} onClose={closePostModal}>
@@ -353,13 +625,26 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
                             </span>
                           ) : (
                             <>
-                              <span className="icon-wrapper upvote" onClick={() => handleUpvoteComment(comment.commentID)}>
-                                <FontAwesomeIcon icon={faThumbsUp} /> {comment.upvotes || 0}
-                              </span>
-                              <span className="icon-wrapper downvote" onClick={() => handleDownvoteComment(comment.commentID)}>
-                                <FontAwesomeIcon icon={faThumbsDown} /> {comment.downvotes || 0}
-                              </span>
-                            </>
+                              <span 
+                                  className={`icon-wrapper upvote ${comment.userVote === 'upvote' ? 'active' : ''} ${
+                                    commentActionStates[comment.commentID] ? 'loading' : ''
+                                  }`}
+                                  onClick={() => handleCommentAction(comment.commentID, 'upvote')}
+                                >
+                                  <FontAwesomeIcon icon={faThumbsUp} /> 
+                                  <span className="vote-count">{comment.upvotes || 0}</span>
+                                </span>
+
+                                <span 
+                                  className={`icon-wrapper downvote ${comment.userVote === 'downvote' ? 'active' : ''} ${
+                                    commentActionStates[comment.commentID] ? 'loading' : ''
+                                  }`}
+                                  onClick={() => handleCommentAction(comment.commentID, 'downvote')}
+                                >
+                                  <FontAwesomeIcon icon={faThumbsDown} /> 
+                                  <span className="vote-count">{comment.downvotes || 0}</span>
+                                </span>
+                              </>
                           )}
                         </div>
                       </div>

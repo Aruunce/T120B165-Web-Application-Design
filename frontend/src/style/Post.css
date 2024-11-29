@@ -680,3 +680,201 @@ textarea.invalid {
   display: flex;
   gap: 1rem;
 }
+
+.post-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.icon-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.icon-wrapper:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.action-count {
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.icon-wrapper.like.active {
+  color: #ff4444;
+}
+
+.icon-wrapper.like.active .action-count {
+  color: #ff4444;
+}
+
+.post-footer {
+  padding: 8px 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.post-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.stat-item:hover {
+  background: var(--hover-bg);
+}
+
+.stat-item.active {
+  color: var(--accent-color);
+}
+
+.stat-item.likes.active {
+  color: #ff4444;
+}
+
+.stat-item.retweets.active {
+  color: #4BB543;
+}
+
+.post.loading {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--accent-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.icon-wrapper.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.count {
+  margin-left: 4px;
+  font-size: 0.9rem;
+}
+
+.post.error {
+  padding: 1rem;
+  color: #ff4444;
+  background-color: rgba(255, 68, 68, 0.1);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.icon-wrapper.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.icon-wrapper.loading .fa-heart {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.icon-wrapper.retweet.active {
+  color: #4BB543;
+}
+
+.icon-wrapper.retweet.active .fa-retweet {
+  color: #4BB543;
+}
+
+.icon-wrapper.retweet.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.icon-wrapper.retweet.loading .fa-retweet {
+  animation: pulse 1s infinite;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.icon-wrapper.upvote.active {
+  color: #4BB543;
+}
+
+.icon-wrapper.downvote.active {
+  color: #ff4444;
+}
+
+.icon-wrapper.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.vote-count {
+  margin-left: 4px;
+  font-size: 0.9rem;
+}
+
+.net-votes {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.comment {
+  transition: background-color 0.3s ease;
+}
+
+/* Highlight highly voted comments */
+.comment[data-votes="positive"] {
+  background-color: rgba(75, 181, 67, 0.1);
+}
+
+.comment[data-votes="negative"] {
+  background-color: rgba(255, 68, 68, 0.1);
+}
+
+.comment {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

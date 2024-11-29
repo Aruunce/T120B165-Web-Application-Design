@@ -28,6 +28,25 @@ const Home = () => {
     setModalType('comment');
   };
 
+  const handleLikePost = async (postId) => {
+    try {
+      const response = await axios.post(`/posts/${postId}/like-retweet`, {
+        userId: localStorage.getItem('userID'),
+        type: 'like'
+      });
+      // Update posts state with new like count
+      setPosts(prevPosts => 
+        prevPosts.map(post => 
+          post.postID === postId 
+            ? { ...post, likeCount: (post.likeCount || 0) + 1 }
+            : post
+        )
+      );
+    } catch (error) {
+      console.error('Error liking post:', error);
+    }
+  };
+
   const handleCommentSubmitted = async (newComment) => {
     try {
       // Update posts state optimistically

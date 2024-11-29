@@ -64,15 +64,15 @@ function clearUserData() {
   localStorage.removeItem('userID');
 }
 
-function showError(message) {
+const showError = (message) => {
   const errorDiv = document.createElement('div');
   errorDiv.className = 'api-error';
   errorDiv.textContent = message;
   document.body.appendChild(errorDiv);
   
   setTimeout(() => {
-    window.location.reload();
-  }, 1000);
-}
+    errorDiv.remove();
+  }, 3000);
+};
 
 export default instance;

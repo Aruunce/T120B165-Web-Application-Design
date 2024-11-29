@@ -3,59 +3,95 @@ const { validationResult } = require('express-validator');
 
 // Create or Update a Vote for Posts and Comments
 exports.createOrUpdateVote = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   try {
-    const { postId, commentId } = req.params; // Either postId or commentId will be provided
-    const { userId, type } = req.body; // userId and type (upvote/downvote) from the request
+    const { commentId } = req.params;
+    const { userId, type } = req.body;
 
-    let voteTarget;
-
-    // Determine if it's a post or comment vote
-    if (postId) {
-      voteTarget = await Post.findByPk(postId);
-      if (!voteTarget) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-    } else if (commentId) {
-      voteTarget = await Comment.findByPk(commentId);
-      if (!voteTarget) {
-        return res.status(404).json({ error: 'Comment not found' });
-      }
-    } else {
-      return res.status(400).json({ error: 'Must specify either postId or commentId' });
+    if (!commentId || !userId || !type) {
+      return res.status(400).json({ 
+        error: 'Missing required fields: commentId, userId, or type' 
+      });
     }
 
-    // Check if the vote already exists
+    if (!['upvote', 'downvote'].includes(type)) {
+      return res.status(400).json({ 
+        error: 'Invalid vote type. Must be "upvote" or "downvote"' 
+      });
+    }
+
+    // Find the comment
+    const comment = await Comment.findByPk(commentId);
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
+    // Check if user already voted on this comment
     const existingVote = await Vote.findOne({
       where: {
-        userID: userId,
-        postID: postId || null,
-        commentID: commentId || null,
-      },
+        commentID: commentId,
+        userID: userId
+      }
     });
 
+    let voteResult;
+    let message;
+    
     if (existingVote) {
-      // Update the existing vote
-      await existingVote.update({ type });
-      return res.json({ message: 'Vote updated successfully', vote: existingVote });
+      // If clicking the same vote type, remove the vote (unvoting)
+      if (existingVote.type === type) {
+        await existingVote.destroy();
+        message = 'Vote removed';
+        voteResult = { action: 'removed', type };
+      } else {
+        // If clicking different vote type, update the vote
+        await existingVote.update({ type });
+        message = 'Vote updated';
+        voteResult = { action: 'updated', type };
+      }
     } else {
-      // Create a new vote
-      const voteData = {
+      // Create new vote if none exists
+      await Vote.create({
+        commentID: commentId,
         userID: userId,
-        type,
-        postID: postId || null,
-        commentID: commentId || null,
-      };
-
-      const newVote = await Vote.create(voteData);
-      return res.status(201).json({ message: 'Vote created successfully', vote: newVote });
+        type
+      });
+      message = 'Vote created';
+      voteResult = { action: 'created', type };
     }
+
+    // Get updated vote counts
+    const upvotes = await Vote.count({
+      where: {
+        commentID: commentId,
+        type: 'upvote'
+      }
+    });
+
+    const downvotes = await Vote.count({
+      where: {
+        commentID: commentId,
+        type: 'downvote'
+      }
+    });
+
+    // Get user's current vote status
+    const currentVote = await Vote.findOne({
+      where: {
+        commentID: commentId,
+        userID: userId
+      }
+    });
+
+    res.json({
+      message,
+      voteResult,
+      upvotes,
+      downvotes,
+      userVote: currentVote ? currentVote.type : null
+    });
+
   } catch (error) {
-    console.error('Error creating or updating vote:', error);
+    console.error('Error handling vote:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
