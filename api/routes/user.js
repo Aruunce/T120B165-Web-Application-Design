@@ -8,7 +8,7 @@ const {
   registerUser,
   deleteUser,
   getUserPosts,
-  updateUserProfile,
+  updateUser,
   getUserById,
   getUserPostsAndLikes,
   getUserPostsAndLikesByID
@@ -330,13 +330,20 @@ router.delete('/users/:id', deleteUser);
 
 /**
  * @swagger
- * /users/me:
+ * /users/{id}:
  *   put:
- *     summary: Update current user's profile
+ *     summary: Update user by ID
  *     tags: [Users]
- *     description: Updates the profile information of the currently authenticated user.
+ *     description: Updates the profile information of a user by their ID.
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The ID of the user to update
+ *         schema:
+ *           type: integer
  *     requestBody:
  *       required: true
  *       content:
@@ -387,7 +394,52 @@ router.delete('/users/:id', deleteUser);
  *                   type: string
  *                   example: Internal server error
  */
-router.put('/users/me', auth, updateUserProfile);
+router.put('/users/:id', auth, updateUser);
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Get user by ID
+ *     tags: [Users]
+ *     description: Retrieves the profile information of a user by their ID.
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The ID of the user to retrieve
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: The profile information of the user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: Not Found. The user profile could not be found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: User not found
+ *       500:
+ *         description: Internal Server Error. An error occurred while processing the request.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ */
+router.get('/users/:id', auth, getUserById);
+
 
 /**
  * @swagger

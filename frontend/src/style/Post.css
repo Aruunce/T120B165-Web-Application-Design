@@ -571,6 +571,7 @@ textarea.invalid {
   align-items: center;
   gap: 0.5rem;
   transition: transform 0.2s ease;
+  position: fixed;
 }
 
 .back-button:hover {
@@ -872,6 +873,161 @@ textarea.invalid {
   from {
     opacity: 0;
     transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.delete-comment-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: auto;
+  transition: color 0.2s ease;
+}
+
+.delete-comment-btn:hover {
+  color: #ff4444;
+}
+
+.comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.edit-post-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-right: 8px;
+  transition: color 0.2s ease;
+}
+
+.edit-post-btn:hover {
+  color: var(--secondary-color);
+}
+
+.post-actions {
+  display: flex;
+  align-items: center;
+}
+
+.edit-post-form {
+  padding: 1rem;
+  background: var(--modal-background-color);
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.edit-post-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--background-color);
+  color: var(--text-color);
+  margin: 1rem 0;
+  resize: vertical;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.edit-actions button {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+}
+
+.edit-actions button:first-child {
+  background: var(--secondary-color);
+  color: white;
+}
+
+.edit-actions button:last-child {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.edit-post-form {
+  width: 100%;
+  max-width: 600px;
+}
+
+.edit-post-form h2 {
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.edit-post-textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--background-color);
+  color: var(--text-color);
+  margin: 1rem 0;
+  resize: vertical;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.edit-actions button {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+  min-width: 80px;
+}
+
+.edit-actions button:first-child {
+  background: var(--secondary-color);
+  color: white;
+}
+
+.edit-actions button:last-child {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.success-message {
+  background-color: rgba(75, 181, 67, 0.1);
+  color: #4BB543;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  text-align: center;
+  animation: fadeIn 0.3s ease-in-out;
+  z-index: 1100;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;

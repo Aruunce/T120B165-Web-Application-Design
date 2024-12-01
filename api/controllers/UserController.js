@@ -150,9 +150,9 @@ exports.getUserPosts = async (req, res) => {
   }
 };
 
-exports.updateUserProfile = async (req, res) => {
+exports.updateUser = async (req, res) => {
   try {
-    const { id } = req.user;
+    const { id } = req.params;
     const { firstName, lastName, email } = req.body;
 
     const user = await User.findByPk(id);
@@ -160,10 +160,25 @@ exports.updateUserProfile = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    await user.update({ firstName, lastName, email });
-    res.json({ message: 'Profile updated successfully', user });
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.email = email || user.email;
+
+    await user.save();
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        userID: user.userID,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        roleID: user.roleID
+      }
+    });
   } catch (error) {
-    console.error('Error updating user profile:', error);
+    console.error('Error updating user:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

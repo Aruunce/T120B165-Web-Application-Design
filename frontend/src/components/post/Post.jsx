@@ -8,7 +8,9 @@ import {
   faRetweet,
   faArrowLeft,
   faThumbsUp,
-  faThumbsDown
+  faThumbsDown,
+  faTrash,
+  faEdit 
 } from '@fortawesome/free-solid-svg-icons';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -18,6 +20,15 @@ import Modal from '../Modal';
 import axios from '../../utils/axiosConfig';
 
 const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
+
+  const currentUserId = localStorage.getItem('userID');
+  const userRole = localStorage.getItem('userRole');
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [editPostType, setEditPostType] = useState(post.postType);
   const [selectedPost, setSelectedPost] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFullView, setIsFullView] = useState(false);
@@ -28,6 +39,9 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
   const [isRetweeted, setIsRetweeted] = useState(false);
   const [isRetweetLoading, setIsRetweetLoading] = useState(false)
   const commentsEndRef = useRef(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null)
+  const [showSuccess, setShowSuccess] = useState(false);
   const [postData, setPostData] = useState({
     ...post,
     Comments: post?.Comments || [],
@@ -37,14 +51,117 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
   });
 
   const refreshPostData = async () => {
+  try {
+    const response = await axios.get(`/posts/${postData.postID}`);
+    setPostData(response.data);
+    setSelectedPost(response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error refreshing post:', error);
+    throw error;
+  }
+};
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isSubmitting) return;
+    
     try {
-      const response = await axios.get(`/posts/${post.postID}`);
-      setPostData(response.data);
-      setSelectedPost(response.data);
-      return response.data;
+      setIsSubmitting(true);
+      
+      // Make API call
+      await axios.put(`/posts/${postData.postID}`, {
+        content: editContent,
+        postType: editPostType
+      });
+  
+      // Update states first
+      setPostData({
+        ...postData,
+        content: editContent,
+        postType: editPostType
+      });
+      
+      // if (onEdit) {
+      //   onEdit(postData.postID, {
+      //     content: editContent,
+      //     postType: editPostType
+      //   });
+      // }
+  
+      // Show success message briefly before closing
+      setShowSuccess(true);
+  
+      // Close modal after short delay
+      setTimeout(() => {
+        console.log('Post updated successfully');
+        setShowEditModal(false);
+        setShowSuccess(false);
+        setIsSubmitting(false);
+      }, 1000); // Reduced delay to 1 second for better UX
+  
     } catch (error) {
-      console.error('Error refreshing post:', error);
-      throw error;
+      console.error('Error updating post:', error);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId, commentUserId) => {
+    try {
+      if (window.confirm('Are you sure you want to delete this comment?')) {
+        await axios.delete(`/comments/${commentId}`);
+        
+        // Update local state to remove the deleted comment
+        setPostData(prev => ({
+          ...prev,
+          Comments: prev.Comments.filter(c => c.commentID !== commentId)
+        }));
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
+
+  const handleDeletePost = async (e) => {
+    e.stopPropagation(); // Prevent post opening when clicking delete
+    
+    try {
+      if (window.confirm('Are you sure you want to delete this post?')) {
+        await axios.delete(`/posts/${postData.postID}`);
+        
+        if (isFullView) {
+          window.history.pushState({}, '', '/');
+          window.location.reload(); // Refresh to show updated posts list
+        } else {
+          onClick && onClick({ type: 'delete', postId: postData.postID });
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+  };
+
+  const handleCommentSubmit = async (commentContent) => {
+    try {
+      setIsSubmitting(true);
+      const response = await axios.post(`/posts/${postData.postID}/comments`, {
+        content: commentContent,
+        userID: localStorage.getItem('userID')
+      });
+  
+      // Refresh post data to include the new comment
+      await refreshPostData();
+  
+      // Show success message
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (error) {
+      console.error('Error posting comment:', error);
+      alert('Failed to post comment. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -87,53 +204,11 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
     return () => { isMounted = false; };
   }, [post?.postID]);
 
-
   const closePostModal = () => {
     setSelectedPost(null);
     setIsFullView(false);
   };
-
-  const handleCommentSubmitted = async (newComment) => {
-    try {
-      setIsCommentLoading(true);
-      
-      // Optimistically add comment to UI
-      const tempComment = {
-        ...newComment,
-        commentID: `temp-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        User: {
-          username: localStorage.getItem('username')
-        }
-      };
-
-      setPostData(prev => ({
-        ...prev,
-        Comments: [tempComment, ...prev.Comments]
-      }));
-
-      // Get fresh data from server
-      const response = await axios.get(`/posts/${post.postID}`);
-      
-      // Update with server data
-      setPostData(response.data);
-
-      // Scroll to new comment
-      setTimeout(() => {
-        commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-
-      // Optionally force page refresh
-      // window.location.reload();
-
-    } catch (error) {
-      console.error('Error handling comment:', error);
-      alert('Failed to post comment. Please try again.');
-    } finally {
-      setIsCommentLoading(false);
-    }
-  };
-
+  
   useEffect(() => {
     const checkLikeStatus = async () => {
       try {
@@ -167,9 +242,8 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
   const handleCommentClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    openCommentModal(postData, handleCommentSubmitted);
+    openCommentModal(postData, handleCommentSubmit);  // Pass the post data and the submit handler
   };
-
 
   const handlePostClick = () => {
     if (!isLoading) {
@@ -330,6 +404,27 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
             <span className="post-date">
               {postData.createdAt ? new Date(postData.createdAt).toLocaleString() : 'Just now'}
             </span>
+            {(currentUserId === postData.userID || userRole === 'admin') && (
+              <div className="post-actions">
+                <button 
+                  className="edit-post-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowEditModal(true);
+                    setEditContent(postData.content);
+                    setEditPostType(postData.postType);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faEdit} />
+                </button>
+                <button 
+                  className="delete-post-btn"
+                  onClick={handleDeletePost}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </button>
+              </div>
+            )}
             <span className="post-type-icon">
               {postData.postType === 'idea' ? 
                 <FontAwesomeIcon icon={faLightbulb} /> : 
@@ -377,7 +472,7 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
                 className={`icon-wrapper like ${isLiked ? 'active' : ''}`}
                 onClick={(e) => { 
                   e.stopPropagation(); 
-                  onLike(postData); 
+                  handleLike(postData); 
                 }}
               >
                 <FontAwesomeIcon 
@@ -420,6 +515,17 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
                       <span className="comment-date">
                         {formatDate(comment.createdAt)}
                       </span>
+                      {(currentUserId === comment.userID || userRole === 'admin') && (
+                          <button 
+                            className="delete-comment-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteComment(comment.commentID, comment.userID);
+                            }}
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        )}
                     </div>
                     </div>
                     <div className="comment-content">
@@ -431,7 +537,7 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
                         className={`icon-wrapper like ${isLiked ? 'active' : ''}`} 
                         onClick={(e) => { 
                           e.stopPropagation(); 
-                          handleLike(postData); 
+                           
                         }}
                       >
                            <FontAwesomeIcon icon={faHeart} />
@@ -469,7 +575,72 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
             </div>
           </div>
         </div>
-      </div>
+       {showEditModal && (
+          <Modal isOpen={showEditModal} onClose={() => !showSuccess && setShowEditModal(false)}>
+          <div className="post-form-container">
+            <h2>Edit Post</h2>
+            {showSuccess && (
+              <div className="success-message">
+                Post updated successfully!
+              </div>
+            )}
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleEditSubmit(e);
+            }}>
+              <div className="post-type-selector">
+                <button
+                  type="button"
+                  className={`type-button ${editPostType === 'idea' ? 'active' : ''}`}
+                  onClick={() => setEditPostType('idea')}
+                >
+                  <FontAwesomeIcon icon={faLightbulb} /> Idea
+                </button>
+                <button
+                  type="button"
+                  className={`type-button ${editPostType === 'forum' ? 'active' : ''}`}
+                  onClick={() => setEditPostType('forum')}
+                >
+                  <FontAwesomeIcon icon={faComments} /> Discussion
+                </button>
+              </div>
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                placeholder={`Share your ${editPostType}...`}
+                className={`edit-post-textarea ${!editContent.trim() ? 'invalid' : ''}`}
+                required
+                minLength={10}
+                maxLength={1000}
+              />
+              {!editContent.trim() && (
+                <span className="form-validation">Content is required</span>
+              )}
+              {editContent.length < 10 && editContent.trim() && (
+                <span className="form-validation">Content must be at least 10 characters</span>
+              )}
+              <div className="form-actions-centered">
+                <button 
+                  type="submit" 
+                  className="submit-button"
+                  disabled={!editContent.trim() || showSuccess || editContent.length < 10}
+                >
+                  {showSuccess ? 'Saved!' : 'Save Changes'}
+                </button>
+                <button 
+                  type="button" 
+                  className="cancel-button" 
+                  onClick={() => setShowEditModal(false)}
+                  disabled={showSuccess}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </Modal>
+        )}
+          </div>
     );
   }
   return (
@@ -489,6 +660,27 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
             <span className="post-date">
               {postData.createdAt ? new Date(postData.createdAt).toLocaleString() : 'Just now'}
             </span>
+            {(currentUserId === postData.userID || userRole === 'admin') && (
+                <div className="post-actions">
+                  <button 
+                    className="edit-post-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowEditModal(true);
+                      setEditContent(postData.content);
+                      setEditPostType(postData.postType);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faEdit} />
+                  </button>
+                  <button 
+                    className="delete-post-btn"
+                    onClick={handleDeletePost}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </div>
+              )}
             <span className="post-type-icon">
               {postData.postType === 'idea' ? 
                 <FontAwesomeIcon icon={faLightbulb} /> : 
@@ -655,6 +847,71 @@ const Post = ({ post, onClick, openCommentModal, onLike, onRetweet }) => {
                 </div>
             </div>
           </Modal>
+        )}
+        {showEditModal && (
+          <Modal isOpen={showEditModal} onClose={() => !showSuccess && setShowEditModal(false)}>
+          <div className="post-form-container">
+            <h2>Edit Post</h2>
+            {showSuccess && (
+              <div className="success-message">
+                Post updated successfully!
+              </div>
+            )}
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleEditSubmit(e);
+            }}>
+              <div className="post-type-selector">
+                <button
+                  type="button"
+                  className={`type-button ${editPostType === 'idea' ? 'active' : ''}`}
+                  onClick={() => setEditPostType('idea')}
+                >
+                  <FontAwesomeIcon icon={faLightbulb} /> Idea
+                </button>
+                <button
+                  type="button"
+                  className={`type-button ${editPostType === 'forum' ? 'active' : ''}`}
+                  onClick={() => setEditPostType('forum')}
+                >
+                  <FontAwesomeIcon icon={faComments} /> Discussion
+                </button>
+              </div>
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                placeholder={`Share your ${editPostType}...`}
+                className={`edit-post-textarea ${!editContent.trim() ? 'invalid' : ''}`}
+                required
+                minLength={10}
+                maxLength={1000}
+              />
+              {!editContent.trim() && (
+                <span className="form-validation">Content is required</span>
+              )}
+              {editContent.length < 10 && editContent.trim() && (
+                <span className="form-validation">Content must be at least 10 characters</span>
+              )}
+              <div className="form-actions-centered">
+                <button 
+                  type="submit" 
+                  className="submit-button"
+                  disabled={!editContent.trim() || showSuccess || editContent.length < 10}
+                >
+                  {showSuccess ? 'Saved!' : 'Save Changes'}
+                </button>
+                <button 
+                  type="button" 
+                  className="cancel-button" 
+                  onClick={() => setShowEditModal(false)}
+                  disabled={showSuccess}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </Modal>
         )}
       </div>
     );

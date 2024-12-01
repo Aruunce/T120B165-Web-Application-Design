@@ -4,19 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './components/Home';
 import ErrorBoundary from './components/error/ErrorBoundary';
 import './index.css';
-
-function App() {
-
-  return (
-    <ErrorBoundary>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-        </Routes>
-      </Router>
-    </ErrorBoundary>
-  );
-}
+import App from './App';
 
 const container = document.getElementById('root');
 const root = createRoot(container);

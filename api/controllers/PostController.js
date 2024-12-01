@@ -40,13 +40,49 @@ exports.getAllPosts = async (req, res) => {
 exports.getPostById = async (req, res) => {
   try {
     const { id } = req.params;
-    const post = await Post.findByPk(id, { include: User });
+    const post = await Post.findByPk(id, {
+      include: [
+        {
+          model: User,
+          attributes: ['username']
+        },
+        {
+          model: Comment,
+          include: [
+            {
+              model: User,
+              attributes: ['username']
+            }
+          ]
+        },
+        {
+          model: LikeRetweet,
+          attributes: ['type'],
+          include: [
+            {
+              model: User,
+              attributes: ['username']
+            }
+          ]
+        }
+      ]
+    });
 
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    res.json(post);
+    // Count likes and retweets
+    const likeCount = post.LikeRetweets.filter(lr => lr.type === 'like').length;
+    const retweetCount = post.LikeRetweets.filter(lr => lr.type === 'retweet').length;
+    const commentCount = post.Comments.length;
+
+    res.json({
+      ...post.toJSON(),
+      likeCount,
+      retweetCount,
+      commentCount
+    });
   } catch (error) {
     console.error('Error fetching post:', error);
     res.status(500).json({ error: 'Internal server error' });

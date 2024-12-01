@@ -51,33 +51,33 @@ Answer.belongsTo(Post, { foreignKey: 'postID' });
 Answer.belongsTo(User, { foreignKey: 'userID' });
 
 sequelize
-  .sync({ force: true }) // Set force to true to drop tables and recreate them (use with caution)
+  .sync({ force: false }) // Set force to true to drop tables and recreate them (use with caution)
   .then(async () => {
     console.log("Database synchronized successfully.");
     
-      // Create default roles
-      await createDefaultRoles();
+      // // Create default roles
+      // await createDefaultRoles();
 
-      // Create default users
-      await createDefaultUsers();
+      // // Create default users
+      // await createDefaultUsers();
   
-      // Create default posts
-      await createDefaultPosts();
+      // // Create default posts
+      // await createDefaultPosts();
   
-      // Create default comments
-      await createDefaultComments();
+      // // Create default comments
+      // await createDefaultComments();
   
-      // Create default answers
-      await createDefaultAnswers();
+      // // Create default answers
+      // await createDefaultAnswers();
   
-      // Create default likes/retweets
-      await createDefaultLikesRetweets();
+      // // Create default likes/retweets
+      // await createDefaultLikesRetweets();
   
-      // Create default follows
-      await createDefaultFollows();
+      // // Create default follows
+      // await createDefaultFollows();
   
-      // Create default votes
-      await createDefaultVotes();
+      // // Create default votes
+      // await createDefaultVotes();
 
   })
   .catch((err) => {

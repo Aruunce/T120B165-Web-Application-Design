@@ -117,7 +117,6 @@ router.get('/posts/recent', postController.getRecentPosts);
  */
 router.get('/posts/:id', postController.getPostById);
 
-
 /**
  * @swagger
  * /posts/{id}:

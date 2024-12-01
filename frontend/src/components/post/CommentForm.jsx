@@ -12,6 +12,49 @@ const CommentForm = ({ onClose, postID, onCommentSubmitted }) => {
     console.log('PostID received:', postID);
   }, [postID]);
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (!comment.trim()) {
+  //     setError('Comment cannot be empty');
+  //     return;
+  //   }
+  
+  //   setIsSubmitting(true);
+  //   setError('');
+  
+  //   try {
+  //     const response = await axios.post(`/posts/${postID}/comments`, {
+  //       content: comment.trim(),
+  //       userID: parseInt(localStorage.getItem('userID'))
+  //     });
+  
+  //     const newComment = {
+  //       ...response.data.comment,
+  //       postID,
+  //       User: {
+  //         username: localStorage.getItem('username')
+  //       }
+  //     };
+  
+  //     setSuccess(true);
+  //     setComment(''); // Clear comment input
+  
+  //     // Hide success message after 3 seconds
+  //     setTimeout(() => {
+  //       setSuccess(false);
+  //       if (onCommentSubmitted) {
+  //         onCommentSubmitted(newComment);
+  //       }
+  //     }, 3000);
+  
+  //   } catch (error) {
+  //     console.error('Error posting comment:', error);
+  //     setError(error.response?.data?.error || 'Failed to post comment');
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!comment.trim()) {
@@ -23,33 +66,12 @@ const CommentForm = ({ onClose, postID, onCommentSubmitted }) => {
     setError('');
   
     try {
-      const response = await axios.post(`/posts/${postID}/comments`, {
-        content: comment.trim(),
-        userID: parseInt(localStorage.getItem('userID'))
-      });
-  
-      const newComment = {
-        ...response.data.comment,
-        postID,
-        User: {
-          username: localStorage.getItem('username')
-        }
-      };
-  
-      setSuccess(true);
-      setComment(''); // Clear comment input
-  
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        setSuccess(false);
-        if (onCommentSubmitted) {
-          onCommentSubmitted(newComment);
-        }
-      }, 3000);
-  
+      await onCommentSubmitted({ content: comment.trim() });
+      setComment('');
+      onClose();
+      window.location.reload();
     } catch (error) {
-      console.error('Error posting comment:', error);
-      setError(error.response?.data?.error || 'Failed to post comment');
+      setError(error.message || 'Failed to post comment');
     } finally {
       setIsSubmitting(false);
     }
@@ -68,7 +90,7 @@ const CommentForm = ({ onClose, postID, onCommentSubmitted }) => {
           {success}
         </div>
       )}
-      <form onSubmit={handleSubmit} method="POST">
+      <form onSubmit={handleSubmit} >
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
