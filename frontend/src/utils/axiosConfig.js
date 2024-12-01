@@ -14,7 +14,9 @@ instance.interceptors.request.use(
 
       if (decodedToken.exp < currentTime) {
         clearUserData();
-        window.location.href = '/';
+        if (window.location.pathname !== '/') {
+          window.location.href = '/';
+        }
         return Promise.reject(new Error('Token expired'));
       }
 
@@ -37,7 +39,9 @@ instance.interceptors.response.use(
       showError('Unable to connect to server');
     } else if (error.response && error.response.status === 401) {
       clearUserData();
-      window.location.href = '/';
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
     }
     return Promise.reject(error);
   }
@@ -51,7 +55,9 @@ instance.interceptors.response.use(
       localStorage.removeItem('token');
       localStorage.removeItem('userRole');
       localStorage.removeItem('username');
-      window.location.href = '/';
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
     }
     return Promise.reject(error);
   }

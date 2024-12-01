@@ -1,6 +1,7 @@
 const express = require('express');
 const roleController = require('../controllers/RoleController');
 const router = express.Router();
+const auth = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -41,7 +42,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.post('/roles', roleController.createRole);
+router.post('/roles', auth, roleController.createRole);
 
 /**
  * @swagger
@@ -61,7 +62,7 @@ router.post('/roles', roleController.createRole);
  *       500:
  *         description: Internal server error
  */
-router.get('/roles', roleController.getAllRoles);
+router.get('/roles', auth, roleController.getAllRoles);
 
 /**
  * @swagger
@@ -88,7 +89,7 @@ router.get('/roles', roleController.getAllRoles);
  *       500:
  *         description: Internal server error
  */
-router.get('/roles/:id', roleController.getRoleById);
+router.get('/roles/:id', auth, roleController.getRoleById);
 
 /**
  * @swagger
@@ -131,7 +132,7 @@ router.get('/roles/:id', roleController.getRoleById);
  *       500:
  *         description: Internal server error
  */
-router.put('/roles/:id', roleController.updateRole);
+router.put('/roles/:id', auth, roleController.updateRole);
 
 /**
  * @swagger
@@ -154,7 +155,7 @@ router.put('/roles/:id', roleController.updateRole);
  *       500:
  *         description: Internal server error
  */
-router.delete('/roles/:id', roleController.deleteRole);
+router.delete('/roles/:id', auth, roleController.deleteRole);
 
 /**
  * @swagger

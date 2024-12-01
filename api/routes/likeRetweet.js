@@ -1,6 +1,7 @@
 const express = require('express');
 const likeRetweetController = require('../controllers/LikeRetweetController');
 const router = express.Router();
+const auth = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -66,7 +67,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.post('/posts/:postId/like-retweet', likeRetweetController.likeOrRetweetPost);
+router.post('/posts/:postId/like-retweet', auth, likeRetweetController.likeOrRetweetPost);
 
 /**
  * @swagger
@@ -104,7 +105,7 @@ router.post('/posts/:postId/like-retweet', likeRetweetController.likeOrRetweetPo
  *       500:
  *         description: Internal server error
  */
-router.delete('/posts/:postId/like-retweet', likeRetweetController.unlikeOrUnretweetPost);
+router.delete('/posts/:postId/like-retweet', auth, likeRetweetController.unlikeOrUnretweetPost);
 
 /**
  * @swagger
@@ -152,6 +153,6 @@ router.delete('/posts/:postId/like-retweet', likeRetweetController.unlikeOrUnret
  *       500:
  *         description: Internal server error
  */
-router.get('/posts/:postId/like-retweet', likeRetweetController.getLikesAndRetweetsForPost);
+router.get('/posts/:postId/like-retweet', auth, likeRetweetController.getLikesAndRetweetsForPost);
 
 module.exports = router;

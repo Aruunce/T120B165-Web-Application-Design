@@ -213,7 +213,7 @@ router.get('/users/me', auth, getUserProfile);
  *                   type: string
  *                   example: Internal server error
  */
-router.get('/users', getAllUsers);
+router.get('/users', auth, getAllUsers);
 
 /**
  * @swagger
@@ -275,7 +275,7 @@ router.get('/users', getAllUsers);
  *                   type: string
  *                   example: Internal server error
  */
-router.get('/users/:id/posts', getUserPosts);
+router.get('/users/:id/posts', auth, getUserPosts);
 
 /**
  * @swagger
@@ -326,7 +326,7 @@ router.get('/users/:id/posts', getUserPosts);
  *                   type: string
  *                   example: Internal server error
  */
-router.delete('/users/:id', deleteUser);
+router.delete('/users/:id', auth, deleteUser);
 
 /**
  * @swagger
@@ -484,12 +484,12 @@ router.get('/users/:id', auth, getUserById);
  *                   type: string
  *                   example: Internal server error
  */
-router.get('/users/:id', getUserById);
+router.get('/users/:id', auth, getUserById);
 
 
-router.get('/users/:userID/posts-likes', getUserPostsAndLikes);
+router.get('/users/:userID/posts-likes', auth, getUserPostsAndLikes);
 
-router.get('/users/:userID/post-likes/:postID', getUserPostsAndLikesByID);
+router.get('/users/:userID/post-likes/:postID', auth, getUserPostsAndLikesByID);
 
 /**
  * @swagger

@@ -1,6 +1,7 @@
 const express = require('express');
 const followController = require('../controllers/FollowController');
 const router = express.Router();
+const auth = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -52,7 +53,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.post('/users/:followingID/follow', followController.followUser);
+router.post('/users/:followingID/follow', auth, followController.followUser);
 
 /**
  * @swagger
@@ -81,7 +82,7 @@ router.post('/users/:followingID/follow', followController.followUser);
  *       500:
  *         description: Internal server error
  */
-router.delete('/users/:followingID/unfollow', followController.unfollowUser);
+router.delete('/users/:followingID/unfollow', auth, followController.unfollowUser);
 
 /**
  * @swagger
@@ -110,7 +111,7 @@ router.delete('/users/:followingID/unfollow', followController.unfollowUser);
  *       500:
  *         description: Internal server error
  */
-router.get('/users/:userId/followers', followController.getFollowers);
+router.get('/users/:userId/followers', auth, followController.getFollowers);
 
 /**
  * @swagger
@@ -139,7 +140,7 @@ router.get('/users/:userId/followers', followController.getFollowers);
  *       500:
  *         description: Internal server error
  */
-router.get('/users/:userId/following', followController.getFollowing);
+router.get('/users/:userId/following', auth, followController.getFollowing);
 
 /**
  * @swagger

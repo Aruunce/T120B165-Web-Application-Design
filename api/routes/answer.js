@@ -1,6 +1,7 @@
 const express = require('express');
 const answerController = require('../controllers/AnswerController');
 const router = express.Router();
+const auth = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -65,7 +66,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.post('/comments/:commentId/answers', answerController.createAnswerForComment);
+router.post('/comments/:commentId/answers', auth, answerController.createAnswerForComment);
 
 /**
  * @swagger
@@ -104,7 +105,7 @@ router.post('/comments/:commentId/answers', answerController.createAnswerForComm
  *       500:
  *         description: Internal server error
  */
-router.get('/comments/:commentId/answers', answerController.getAnswersByCommentId);
+router.get('/comments/:commentId/answers', auth, answerController.getAnswersByCommentId);
 
 /**
  * @swagger
@@ -157,7 +158,7 @@ router.get('/comments/:commentId/answers', answerController.getAnswersByCommentI
  *       500:
  *         description: Internal server error
  */
-router.put('/answers/:id', answerController.updateAnswer);
+router.put('/answers/:id', auth, answerController.updateAnswer);
 
 /**
  * @swagger
@@ -180,6 +181,6 @@ router.put('/answers/:id', answerController.updateAnswer);
  *       500:
  *         description: Internal server error
  */
-router.delete('/answers/:id', answerController.deleteAnswer);
+router.delete('/answers/:id', auth, answerController.deleteAnswer);
 
 module.exports = router;

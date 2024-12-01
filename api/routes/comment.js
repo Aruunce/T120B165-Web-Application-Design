@@ -109,7 +109,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.post('/posts/:postId/comments', commentController.createCommentForPost);
+router.post('/posts/:postId/comments', auth, commentController.createCommentForPost);
 
 /**
  * @swagger
@@ -138,7 +138,7 @@ router.post('/posts/:postId/comments', commentController.createCommentForPost);
  *       500:
  *         description: Internal server error
  */
-router.get('/posts/:postId/comments', commentController.getCommentsByPostId);
+router.get('/posts/:postId/comments', auth, commentController.getCommentsByPostId);
 
 /**
  * @swagger
@@ -181,7 +181,7 @@ router.get('/posts/:postId/comments', commentController.getCommentsByPostId);
  *       500:
  *         description: Internal server error
  */
-router.put('/comments/:id', commentController.updateComment);
+router.put('/comments/:id', auth, commentController.updateComment);
 
 /**
  * @swagger
@@ -204,7 +204,7 @@ router.put('/comments/:id', commentController.updateComment);
  *       500:
  *         description: Internal server error
  */
-router.delete('/comments/:id', commentController.deleteComment);
+router.delete('/comments/:id', auth, commentController.deleteComment);
 
 /**
  * @swagger

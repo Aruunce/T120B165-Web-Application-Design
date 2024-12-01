@@ -68,7 +68,7 @@ router.post('/posts', auth, postController.createPost);
  *       500:
  *         description: Internal server error
  */
-router.get('/posts', postController.getAllPosts);
+router.get('/posts', auth, postController.getAllPosts);
 
 /**
  * @swagger
@@ -88,7 +88,7 @@ router.get('/posts', postController.getAllPosts);
  *       500:
  *         description: Internal server error
  */
-router.get('/posts/recent', postController.getRecentPosts);
+router.get('/posts/recent', auth, postController.getRecentPosts);
 
 /**
  * @swagger
@@ -115,7 +115,7 @@ router.get('/posts/recent', postController.getRecentPosts);
  *       500:
  *         description: Internal server error
  */
-router.get('/posts/:id', postController.getPostById);
+router.get('/posts/:id', auth, postController.getPostById);
 
 /**
  * @swagger
