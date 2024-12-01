@@ -115,19 +115,102 @@ OpenAPI (Swagger) yra specifikacija, skirta API dokumentavimui ir testavimui.
 
 ## 4. Naudotojo sąsajos projektas (wireframe)
 #### Namų langas
-![alt text](image.png)
+![Namų langas](Attachments/image.png)
 #### Prisujungusio vartotojo namų langas
-![alt text](image-1.png)
+![Prisujungusio vartotojo namų langas](Attachments/image-1.png)
 #### Pranešimo langas
-![alt text](image-2.png)
+![Pranešimo langas](Attachments/image-2.png)
 #### Pranešimo kūrimo modalas
-![alt text](image-4.png)
+![Pranešimo kūrimo modalas](Attachments/image-4.png)
 #### Pranešimo redagavimo
-![alt text](image-5.png)
+![ranešimo redagavimo](Attachments/image-5.png)
 #### Komentaro rašymo modalas
-![alt text](image-6.png)
+![Komentaro rašymo modalas](Attachments/image-6.png)
 
 ## 5. Sistemos dizainas
+#### Namų langas
+![Namų langas](Attachments/image-7.png)
+#### Prisujungusio vartotojo namų langas
+![Prisujungusio vartotojo namų langas](Attachments/image-10.png)
+#### Pranešimo langas
+![Pranešimo langas](Attachments/image-11.png)
+#### Vartotojų redagavimas
+![Vartotojų redagavimas](Attachments/image-14.png)
+#### Prisijungusio vartotojo namų langas telefone
+![Prisijungusio vartotojo namų langas telefone](Attachments/image-15.png)
+#### Prisijungimo modalas
+![Prisijungimo modalas](Attachments/image-8.png)
+#### Registracijos modalas
+![Registracijos modalas](Attachments/image-9.png)
+#### Pranešimo kūrimo modalas
+![Pranešimo kūrimo modalas](Attachments/image-12.png)
+#### Komentaro kūrimo modalas
+![Komentaro kūrimo modalas](Attachments/image-13.png)
 
 ## 6. UML "Deployment" Diagrama
 
+Ši diagrama atspindi aplikacijos diegimo architektūrą DigitalOcean debesyje. Aplikacija veikia viename virtualiame serveryje („Droplet“), kuriame diegti pagrindiniai komponentai: Nginx žiniatinklio serveris aptarnauja React frontend‘ą ir nukreipia REST API užklausas į Node.js backend‘ą. Backend‘as, savo ruožtu, bendrauja su MySQL duomenų baze, kuri yra apribota tik vietinei prieigai (prievadas 3306). Užkarda leidžia tik HTTP (80), HTTPS (443) ir API (4000) užklausas išorėje, užtikrinant saugumą.
+
+#### Diegimo diagrama
+![Diegimo diagrama](Attachments/image-16.png)
+## 7. „OpenAPI" specifikacija
+Projekto metu buvo sukurta išsami API dokumentacija naudojant OpenAPI (Swagger) specifikaciją. Ši dokumentacija apima visus pagrindinius API galus, įskaitant vartotojų valdymą, pranešimų kūrimą, komentarų valdymą, balsavimą ir kitus funkcionalumus. Dokumentacija automatiškai generuojama iš API aprašymų, pateiktų kodo komentaruose, ir yra prieinama per Swagger UI sąsają. Tai leidžia lengvai testuoti API užklausas tiesiogiai iš dokumentacijos ir užtikrina, kad visi API galai yra gerai aprašyti ir lengvai naudojami. [OpenAPI specifikacija](Attachments/Swagger.txt)
+
+```yaml
+  /posts/recent:
+    get:
+      summary: Get recent posts
+      tags:
+        - Posts
+      responses:
+        '200':
+          description: List of recent posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '500':
+          description: Internal server error
+  /posts/{id}:
+    get:
+      summary: Get a post by ID
+      tags:
+        - Posts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the post to retrieve
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Post retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+        '500':
+          description: Internal server error
+```
+
+## 8. Išvada
+Šio projekto metu buvo sukurta socialinė platforma „Postoria“, kuri leidžia vartotojams dalintis mintimis, kurti diskusijas ir balsuoti už atsakymus. Nors projekto metu buvo pasiekta daug svarbių tikslų, kai kurios funkcijos liko neįgyvendintos arba nevisiškai užbaigtos.
+
+### Pasiekimai:
+- **Autentifikacija ir autorizacija**: Sėkmingai įgyvendinta autentifikacija ir autorizacija naudojant JWT, užtikrinant saugų vartotojų prisijungimą ir prieigos valdymą.
+- **API dokumentacija**: Sukurta išsami API dokumentacija naudojant OpenAPI (Swagger) specifikaciją, kuri leidžia lengvai testuoti ir naudoti API.
+- **Frontend ir backend integracija**: Sėkmingai integruotas React frontend su Node.js ir Express backend, užtikrinant sklandų duomenų mainus ir vartotojo sąsajos veikimą.
+
+### Neužbaigtos dalys:
+- **Kai kurios funkcijos**: Kai kurios funkcijos, tokios kaip išplėstinis moderavimas ir pranešimų sistema, liko neįgyvendintos arba nevisiškai užbaigtos.
+- **Testavimas**: Nors buvo atliktas pagrindinis funkcionalumo testavimas, reikėtų atlikti išsamesnį testavimą, siekiant užtikrinti visų funkcijų stabilumą ir saugumą.
+- **Naudotojo sąsajos tobulinimas**: Kai kurios naudotojo sąsajos dalys galėtų būti patobulintos, siekiant pagerinti vartotojo patirtį ir sąveiką su sistema.
+- **Debesų technologijos**: Nepasiektas tobulas sistemos patalpinimas debesijoje, panaudojant dockerizaciją.
+
+### Išvados:
+Nepaisant kai kurių neįgyvendintų funkcijų, projektas „Postoria“ pasiekė daug svarbių tikslų ir suteikė tvirtą pagrindą tolesniam vystymui. Ateityje būtų naudinga toliau tobulinti ir plėsti projektą, atsižvelgiant į naudotojų atsiliepimus ir poreikius. Bendras projekto rezultatas yra teigiamas, ir jis turi didelį potencialą tapti populiaria socialine platforma.

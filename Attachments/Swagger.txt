@@ -1,0 +1,1774 @@
+openapi: 3.0.0
+info:
+  title: Postoria API Documentation
+  version: 1.0.0
+  description: API documentation for Postoria app
+servers:
+  - url: http://localhost:4000/api
+paths:
+  /comments/{commentId}/answers:
+    post:
+      summary: Create a new answer for a specific comment
+      tags:
+        - Answers
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment to which the answer will be added
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: This is an answer.
+                userID:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: Answer created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Answer created successfully
+                  answer:
+                    type: object
+                    properties:
+                      content:
+                        type: string
+                        example: This is an answer.
+                      userID:
+                        type: integer
+                        example: 1
+                      postID:
+                        type: integer
+                        example: 2
+        '400':
+          description: Answers can only be added to topic posts
+        '404':
+          description: Comment not found
+        '500':
+          description: Internal server error
+    get:
+      summary: Get all answers for a specific comment
+      tags:
+        - Answers
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment for which to retrieve answers
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of answers for the specified comment
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    content:
+                      type: string
+                      example: This is an answer.
+                    userID:
+                      type: integer
+                      example: 1
+                    postID:
+                      type: integer
+                      example: 2
+        '404':
+          description: Comment not found
+        '500':
+          description: Internal server error
+  /answers/{id}:
+    put:
+      summary: Update an existing answer
+      tags:
+        - Answers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the answer to be updated
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: Updated answer content.
+      responses:
+        '200':
+          description: Answer updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Answer updated successfully
+                  answer:
+                    type: object
+                    properties:
+                      content:
+                        type: string
+                        example: Updated answer content.
+                      userID:
+                        type: integer
+                        example: 1
+                      postID:
+                        type: integer
+                        example: 2
+        '404':
+          description: Answer not found
+        '500':
+          description: Internal server error
+    delete:
+      summary: Delete an existing answer
+      tags:
+        - Answers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the answer to be deleted
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Answer deleted successfully
+        '404':
+          description: Answer not found
+        '500':
+          description: Internal server error
+  /posts/{postId}/comments:
+    get:
+      summary: Get all comments for a specific post
+      tags:
+        - Comments
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post for which to retrieve comments
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of comments for the specified post
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '404':
+          description: No comments found for this post
+        '500':
+          description: Internal server error
+  /comments/{id}:
+    put:
+      summary: Update an existing comment
+      tags:
+        - Comments
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the comment to be updated
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: Updated comment content.
+      responses:
+        '200':
+          description: Comment updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Comment updated successfully
+                  comment:
+                    $ref: '#/components/schemas/Comment'
+        '404':
+          description: Comment not found
+        '500':
+          description: Internal server error
+    delete:
+      summary: Delete an existing comment
+      tags:
+        - Comments
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the comment to be deleted
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Comment deleted successfully
+        '404':
+          description: Comment not found
+        '500':
+          description: Internal server error
+  /comments/{commentID}/like:
+    post:
+      summary: Like a comment
+      tags:
+        - Comments
+      parameters:
+        - name: commentID
+          in: path
+          required: true
+          description: The ID of the comment to like
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Comment liked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Comment liked successfully
+                  comment:
+                    $ref: '#/components/schemas/Comment'
+        '404':
+          description: Comment not found
+        '500':
+          description: Internal server error
+  /comments/{commentID}/upvote:
+    post:
+      summary: Upvote a comment
+      tags: /comments/{id}:
+    put:
+      summary: Update an existing comment
+      tags:
+        - Comments
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the comment to be updated
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: Updated comment content.
+      responses:
+        '200':
+          description: Comment updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Comment updated successfully
+                  comment:
+                    $ref: '#/components/schemas/Comment'
+        '404':
+          description: Comment not found
+        '500':
+          description: Internal server error
+    delete:
+      summary: Delete an existing comment
+      tags:
+        - Comments
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the comment to be deleted
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Comment deleted successfully
+        '404':
+          description: Comment not found
+        '500':
+          description: Internal server error
+        - Comments
+      parameters:
+        - name: commentID
+          in: path
+          required: true
+          description: The ID of the comment to upvote
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Comment upvoted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Comment upvoted successfully
+                  comment:
+                    $ref: '#/components/schemas/Comment'
+        '404':
+          description: Comment not found
+        '500':
+          description: Internal server error
+  /users/{followingID}/follow:
+    post:
+      summary: Follow a user
+      tags:
+        - Follows
+      parameters:
+        - name: followingID
+          in: path
+          required: true
+          description: The ID of the user to be followed
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                followerID:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: User followed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User followed successfully
+                  follow:
+                    $ref: '#/components/schemas/Follow'
+        '400':
+          description: Error following user (e.g., self-follow, already following)
+        '404':
+          description: User to follow not found
+        '500':
+          description: Internal server error
+  /users/{followingID}/unfollow:
+    delete:
+      summary: Unfollow a user
+      tags:
+        - Follows
+      parameters:
+        - name: followingID
+          in: path
+          required: true
+          description: The ID of the user to be unfollowed
+          schema:
+            type: integer
+        - name: followerID
+          in: query
+          required: true
+          description: The ID of the follower
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: User unfollowed successfully
+        '404':
+          description: You are not following this user
+        '500':
+          description: Internal server error
+  /users/{userId}/followers:
+    get:
+      summary: Get all followers for a user
+      tags:
+        - Follows
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user to get followers for
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of followers for the specified user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+  /users/{userId}/following:
+    get:
+      summary: Get all users a specific user is following
+      tags:
+        - Follows
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user to get following for
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of users that the specified user is following
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+  /posts/{postId}/like-retweet:
+    post:
+      summary: Like or retweet a specific post
+      tags:
+        - LikeRetweet
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to like or retweet
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  example: 1
+                type:
+                  type: string
+                  enum:
+                    - like
+                    - retweet
+                  example: like
+      responses:
+        '201':
+          description: Post liked or retweeted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Post liked successfully
+                  action:
+                    type: object
+                    properties:
+                      postID:
+                        type: integer
+                        example: 1
+                      userID:
+                        type: integer
+                        example: 1
+                      type:
+                        type: string
+                        example: like
+        '400':
+          description: Invalid type or post already liked/retweeted
+        '404':
+          description: Post not found
+        '500':
+          description: Internal server error
+    delete:
+      summary: Unlike or unretweet a post
+      tags:
+        - LikeRetweet
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to unlike or unretweet
+          schema:
+            type: integer
+        - name: userId
+          in: query
+          required: true
+          description: The ID of the user performing the action
+          schema:
+            type: integer
+        - name: type
+          in: query
+          required: true
+          description: The type of action to perform, either 'like' or 'retweet'
+          schema:
+            type: string
+            enum:
+              - like
+              - retweet
+      responses:
+        '204':
+          description: Successfully removed like or retweet
+        '400':
+          description: Invalid type or other client error
+        '404':
+          description: Post not found or not liked/retweeted
+        '500':
+          description: Internal server error
+    get:
+      summary: Get all likes and retweets for a specific post
+      tags:
+        - LikeRetweet
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post for which to retrieve likes and retweets
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of likes and retweets for the specified post
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    postID:
+                      type: integer
+                      example: 1
+                    userID:
+                      type: integer
+                      example: 1
+                    type:
+                      type: string
+                      example: like
+                    User:
+                      type: object
+                      properties:
+                        userID:
+                          type: integer
+                          example: 1
+                        username:
+                          type: string
+                          example: john_doe
+        '404':
+          description: Post not found
+        '500':
+          description: Internal server error
+  /posts:
+    post:
+      summary: Create a new post
+      tags:
+        - Posts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: This is a new post.
+                postType:
+                  type: string
+                  example: idea
+                userID:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: Post created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Post created successfully
+                  post:
+                    $ref: '#/components/schemas/Post'
+        '500':
+          description: Internal server error
+    get:
+      summary: Get all posts
+      tags:
+        - Posts
+      responses:
+        '200':
+          description: List of all posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '500':
+          description: Internal server error
+  /posts/recent:
+    get:
+      summary: Get recent posts
+      tags:
+        - Posts
+      responses:
+        '200':
+          description: List of recent posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '500':
+          description: Internal server error
+  /posts/{id}:
+    get:
+      summary: Get a post by ID
+      tags:
+        - Posts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the post to retrieve
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Post retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+        '500':
+          description: Internal server error
+    put:
+      summary: Update a post
+      tags:
+        - Posts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the post to update
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: Updated post content.
+                postType:
+                  type: string
+                  example: forum
+      responses:
+        '200':
+          description: Post updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Post updated successfully
+                  post:
+                    $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+        '500':
+          description: Internal server error
+    delete:
+      summary: Delete a post
+      tags:
+        - Posts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the post to delete
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Post deleted successfully
+        '404':
+          description: Post not found
+        '500':
+          description: Internal server error
+  /posts/{id}/details:
+    get:
+      summary: Get a post with all its details
+      tags:
+        - Posts
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the post to retrieve
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Post retrieved successfully with all details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  postID:
+                    type: integer
+                    example: 1
+                  content:
+                    type: string
+                    example: This is a post
+                  postType:
+                    type: string
+                    enum:
+                      - idea
+                      - forum
+                    example: idea
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+                  User:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        example: john_doe
+                  Comments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        commentID:
+                          type: integer
+                          example: 1
+                        content:
+                          type: string
+                          example: This is a comment
+                        User:
+                          type: object
+                          properties:
+                            username:
+                              type: string
+                              example: jane_doe
+                  LikeRetweets:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum:
+                            - like
+                            - retweet
+                          example: like
+                        User:
+                          type: object
+                          properties:
+                            username:
+                              type: string
+                              example: jane_doe
+        '401':
+          description: Unauthorized - Invalid or missing token
+        '404':
+          description: Post not found
+        '500':
+          description: Internal server error
+  /roles:
+    post:
+      summary: Create a new role
+      tags:
+        - Roles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                roleName:
+                  type: string
+                  example: Administrator
+      responses:
+        '201':
+          description: Role created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Role created successfully
+                  role:
+                    $ref: '#/components/schemas/Role'
+        '500':
+          description: Internal server error
+    get:
+      summary: Get all roles
+      tags:
+        - Roles
+      responses:
+        '200':
+          description: List of all roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Role'
+        '500':
+          description: Internal server error
+  /roles/{id}:
+    get:
+      summary: Get a role by ID
+      tags:
+        - Roles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the role to retrieve
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Role retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '404':
+          description: Role not found
+        '500':
+          description: Internal server error
+    put:
+      summary: Update a role
+      tags:
+        - Roles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the role to update
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                roleName:
+                  type: string
+                  example: Moderator
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Role updated successfully
+                  role:
+                    $ref: '#/components/schemas/Role'
+        '404':
+          description: Role not found
+        '500':
+          description: Internal server error
+    delete:
+      summary: Delete a role
+      tags:
+        - Roles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the role to delete
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Role deleted successfully
+        '404':
+          description: Role not found
+        '500':
+          description: Internal server error
+  /login:
+    post:
+      summary: Log in a user
+      tags:
+        - Users
+      description: Authenticates a user with their username and password, and returns a JWT token if the credentials are valid.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: john_doe
+                password:
+                  type: string
+                  format: password
+                  example: securepassword123
+      responses:
+        '200':
+          description: Successfully logged in. Returns the JWT token and user information.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4iLCJpYXQiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request. Invalid username or password.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid username or password
+        '500':
+          description: Internal Server Error. An error occurred while processing the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+  /register:
+    post:
+      summary: Register a new user
+      tags:
+        - Users
+      description: Creates a new user account with the provided details. The user role defaults to 'user' if not specified.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: john_doe
+                password:
+                  type: string
+                  format: password
+                  example: securepassword123
+                email:
+                  type: string
+                  example: john.doe@example.com
+                firstName:
+                  type: string
+                  example: John
+                lastName:
+                  type: string
+                  example: Doe
+                role:
+                  type: string
+                  example: admin
+      responses:
+        '201':
+          description: User successfully registered. Returns the newly created user object.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User registered successfully
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request. The provided username is already taken or other validation issues.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Username already taken
+        '500':
+          description: Internal Server Error. An error occurred while processing the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+  /users:
+    get:
+      summary: Get all users
+      tags:
+        - Users
+      description: Retrieves a list of all users from the database.
+      responses:
+        '200':
+          description: A list of users.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '500':
+          description: Internal Server Error. An error occurred while processing the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+  /users/{id}/posts:
+    get:
+      summary: Get all posts by a user
+      tags:
+        - Users
+      description: Retrieves all posts made by a specific user.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the user whose posts are to be retrieved
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: A list of posts made by the specified user.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    postID:
+                      type: integer
+                      format: int64
+                      example: 1
+                    content:
+                      type: string
+                      example: This is a post content
+                    postType:
+                      type: string
+                      example: text
+                    userID:
+                      type: integer
+                      format: int64
+                      example: 1
+        '404':
+          description: Not Found. The user with the specified ID does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: User not found
+        '500':
+          description: Internal Server Error. An error occurred while processing the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+  /users/{id}:
+    put:
+      summary: Update user by ID
+      tags:
+        - Users
+      description: Updates the profile information of a user by their ID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the user to update
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  example: John
+                lastName:
+                  type: string
+                  example: Doe
+                email:
+                  type: string
+                  example: john.doe@example.com
+      responses:
+        '200':
+          description: Profile updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Profile updated successfully
+                  user:
+                    $ref: '#/components/schemas/User'
+        '404':
+          description: Not Found. The user profile could not be found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: User not found
+        '500':
+          description: Internal Server Error. An error occurred while processing the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+    get:
+      summary: Get user by ID
+      tags:
+        - Users
+      description: Retrieves the profile information of a user by their ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the user to retrieve
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: The profile information of the user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Not Found. The user with the specified ID does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: User not found
+        '500':
+          description: Internal Server Error. An error occurred while processing the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+  /posts/{postId}/votes:
+    post:
+      summary: Create or update a vote for a post
+      tags:
+        - Vote
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to vote on
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  example: 1
+                type:
+                  type: string
+                  enum:
+                    - upvote
+                    - downvote
+                  example: upvote
+      responses:
+        '200':
+          description: Vote updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Vote updated successfully
+                  vote:
+                    type: object
+                    properties:
+                      userID:
+                        type: integer
+                        example: 1
+                      postID:
+                        type: integer
+                        example: 1
+                      type:
+                        type: string
+                        example: upvote
+        '201':
+          description: Vote created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Vote created successfully
+                  vote:
+                    type: object
+                    properties:
+                      userID:
+                        type: integer
+                        example: 1
+                      postID:
+                        type: integer
+                        example: 1
+                      type:
+                        type: string
+                        example: upvote
+        '400':
+          description: Must specify either postId or invalid vote type
+        '404':
+          description: Post not found
+        '500':
+          description: Internal server error
+    get:
+      summary: Get all votes for a specific post
+      tags:
+        - Vote
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post for which to retrieve votes
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of votes for the specified post
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    userID:
+                      type: integer
+                      example: 1
+                    postID:
+                      type: integer
+                      example: 1
+                    type:
+                      type: string
+                      example: upvote
+                    User:
+                      type: object
+                      properties:
+                        userID:
+                          type: integer
+                          example: 1
+                        username:
+                          type: string
+                          example: john_doe
+        '404':
+          description: Post not found
+        '500':
+          description: Internal server error
+  /votes/{voteId}:
+    delete:
+      summary: Delete a specific vote
+      tags:
+        - Vote
+      parameters:
+        - name: voteId
+          in: path
+          required: true
+          description: The ID of the vote to delete
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Vote deleted successfully
+        '404':
+          description: Vote not found
+        '500':
+          description: Internal server error
+  /comments/{commentId}/votes:
+    post:
+      summary: Create or update a vote for a comment
+      tags:
+        - Vote
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment to vote on
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  example: 1
+                type:
+                  type: string
+                  enum:
+                    - upvote
+                    - downvote
+                  example: downvote
+      responses:
+        '200':
+          description: Vote updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Vote updated successfully
+                  vote:
+                    type: object
+                    properties:
+                      userID:
+                        type: integer
+                        example: 1
+                      commentID:
+                        type: integer
+                        example: 1
+                      type:
+                        type: string
+                        example: downvote
+        '201':
+          description: Vote created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Vote created successfully
+                  vote:
+                    type: object
+                    properties:
+                      userID:
+                        type: integer
+                        example: 1
+                      commentID:
+                        type: integer
+                        example: 1
+                      type:
+                        type: string
+                        example: downvote
+        '400':
+          description: Must specify either commentId or invalid vote type
+        '404':
+          description: Comment not found
+        '500':
+          description: Internal server error
+    get:
+      summary: Get all votes for a specific comment
+      tags:
+        - Vote
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment for which to retrieve votes
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of votes for the specified comment
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    userID:
+                      type: integer
+                      example: 1
+                    commentID:
+                      type: integer
+                      example: 1
+                    type:
+                      type: string
+                      example: downvote
+                    User:
+                      type: object
+                      properties:
+                        userID:
+                          type: integer
+                          example: 1
+                        username:
+                          type: string
+                          example: jane_doe
+        '404':
+          description: Comment not found
+        '500':
+          description: Internal server error
+  /answers/{answerId}/votes:
+    post:
+      summary: Vote on an answer
+      tags:
+        - Vote
+      parameters:
+        - name: answerId
+          in: path
+          required: true
+          description: The ID of the answer to vote on
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  example: 1
+                voteType:
+                  type: string
+                  enum:
+                    - upvote
+                    - downvote
+                  example: upvote
+      responses:
+        '200':
+          description: Vote updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Vote updated successfully
+                  vote:
+                    type: object
+                    properties:
+                      userID:
+                        type: integer
+                        example: 1
+                      answerID:
+                        type: integer
+                        example: 1
+                      type:
+                        type: string
+                        example: upvote
+        '201':
+          description: Vote recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Vote recorded successfully
+                  vote:
+                    type: object
+                    properties:
+                      userID:
+                        type: integer
+                        example: 1
+                      answerID:
+                        type: integer
+                        example: 1
+                      type:
+                        type: string
+                        example: upvote
+        '400':
+          description: Must specify either answerId or invalid vote type
+        '404':
+          description: Answer not found
+        '500':
+          description: Internal server error
+    get:
+      summary: Get all votes for a specific answer
+      tags:
+        - Vote
+      parameters:
+        - name: answerId
+          in: path
+          required: true
+          description: The ID of the answer for which to retrieve votes
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of votes for the specified answer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    userID:
+                      type: integer
+                      example: 1
+                    answerID:
+                      type: integer
+                      example: 1
+                    type:
+                      type: string
+                      example: upvote
+                    User:
+                      type: object
+                      properties:
+                        userID:
+                          type: integer
+                          example: 1
+                        username:
+                          type: string
+                          example: alex_smith
+        '404':
+          description: Answer not found
+        '500':
+          description: Internal server error
+components:
+  schemas:
+    Comment:
+      type: object
+      properties:
+        commentID:
+          type: integer
+          example: 1
+        postID:
+          type: integer
+          example: 1
+        userID:
+          type: integer
+          example: 1
+        content:
+          type: string
+          example: This is a comment.
+      required:
+        - commentID
+        - postID
+        - userID
+        - content
+    Follow:
+      type: object
+      properties:
+        followerID:
+          type: integer
+          example: 1
+        followingID:
+          type: integer
+          example: 2
+    User:
+      type: object
+      properties:
+        userID:
+          type: integer
+          example: 1
+          format: int64
+        username:
+          type: string
+          example: john_doe
+        email:
+          type: string
+          example: john.doe@example.com
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        roleID:
+          type: integer
+          format: int64
+          example: 2
+        role:
+          type: string
+          example: admin
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        content:
+          type: string
+          example: This is a new post.
+        postType:
+          type: string
+          example: idea
+        userID:
+          type: integer
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        roleName:
+          type: string
+          example: Administrator
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+  - name: Answers
+    description: API endpoints for managing answers to comments.
+  - name: Comments
+    description: API endpoints for managing comments.
+  - name: Follows
+    description: API endpoints for managing user follow relationships.
+  - name: LikeRetweet
+    description: API endpoints for liking and retweeting posts.
+  - name: Posts
+    description: API endpoints for managing posts.
+  - name: Roles
+    description: API endpoints for managing roles.
+  - name: Users
+    description: API endpoints for user management.
+  - name: Vote
+    description: API endpoints for voting on posts, comments, and answers.
