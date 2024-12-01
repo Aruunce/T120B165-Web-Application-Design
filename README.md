@@ -201,16 +201,5 @@ Projekto metu buvo sukurta išsami API dokumentacija naudojant OpenAPI (Swagger)
 ## 8. Išvada
 Šio projekto metu buvo sukurta socialinė platforma „Postoria“, kuri leidžia vartotojams dalintis mintimis, kurti diskusijas ir balsuoti už atsakymus. Nors projekto metu buvo pasiekta daug svarbių tikslų, kai kurios funkcijos liko neįgyvendintos arba nevisiškai užbaigtos.
 
-### Pasiekimai:
-- **Autentifikacija ir autorizacija**: Sėkmingai įgyvendinta autentifikacija ir autorizacija naudojant JWT, užtikrinant saugų vartotojų prisijungimą ir prieigos valdymą.
-- **API dokumentacija**: Sukurta išsami API dokumentacija naudojant OpenAPI (Swagger) specifikaciją, kuri leidžia lengvai testuoti ir naudoti API.
-- **Frontend ir backend integracija**: Sėkmingai integruotas React frontend su Node.js ir Express backend, užtikrinant sklandų duomenų mainus ir vartotojo sąsajos veikimą.
-
-### Neužbaigtos dalys:
-- **Kai kurios funkcijos**: Kai kurios funkcijos, tokios kaip išplėstinis moderavimas ir pranešimų sistema, liko neįgyvendintos arba nevisiškai užbaigtos.
-- **Testavimas**: Nors buvo atliktas pagrindinis funkcionalumo testavimas, reikėtų atlikti išsamesnį testavimą, siekiant užtikrinti visų funkcijų stabilumą ir saugumą.
-- **Naudotojo sąsajos tobulinimas**: Kai kurios naudotojo sąsajos dalys galėtų būti patobulintos, siekiant pagerinti vartotojo patirtį ir sąveiką su sistema.
-- **Debesų technologijos**: Nepasiektas tobulas sistemos patalpinimas debesijoje, panaudojant dockerizaciją.
-
 ### Išvados:
 Nepaisant kai kurių neįgyvendintų funkcijų, projektas „Postoria“ pasiekė daug svarbių tikslų ir suteikė tvirtą pagrindą tolesniam vystymui. Ateityje būtų naudinga toliau tobulinti ir plėsti projektą, atsižvelgiant į naudotojų atsiliepimus ir poreikius. Bendras projekto rezultatas yra teigiamas, ir jis turi didelį potencialą tapti populiaria socialine platforma.
