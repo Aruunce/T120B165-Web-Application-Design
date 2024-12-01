@@ -39,7 +39,7 @@ const UserList = () => {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      role: user.Role?.roleName
+      role: user.Role?.roleName || ''
     });
     setShowEditModal(true);
   };
@@ -59,7 +59,7 @@ const UserList = () => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         await axios.delete(`/users/${userId}`);
-        fetchUsers(); // Refresh user list
+        fetchUsers();
       } catch (error) {
         console.error('Error deleting user:', error);
       }

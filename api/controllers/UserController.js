@@ -101,7 +101,10 @@ exports.getUserProfile = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      include: [{ model: Role, as: 'Role', attributes: ['roleName'] }]
+    });
+
 
     res.json(users);
   } catch (error) {
@@ -153,16 +156,24 @@ exports.getUserPosts = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { firstName, lastName, email } = req.body;
+    const { username, email, firstName, lastName, role } = req.body;
 
     const user = await User.findByPk(id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    user.username = username || user.username;
+    user.email = email || user.email;
     user.firstName = firstName || user.firstName;
     user.lastName = lastName || user.lastName;
-    user.email = email || user.email;
+
+    if (role) {
+      const foundRole = await Role.findOne({ where: { roleName: role } });
+      if (foundRole) {
+        user.roleID = foundRole.roleID;
+      }
+    }
 
     await user.save();
 

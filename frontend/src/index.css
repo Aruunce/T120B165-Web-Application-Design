@@ -83,22 +83,31 @@ button:hover {
 }
 
 @media (max-width: 768px) {
-  .header nav ul li {
-    display: block;
-    margin: 0.5rem 0;
+  .user-list {
+    padding: 1rem;
+    padding-top: 5rem;
   }
 
-  .content {
+  .user-list table {
+    margin-top: 1rem;
+  }
+
+  .user-list th,
+  .user-list td {
+    padding: 0.5rem;
+  }
+
+  .edit-user-form {
     padding: 1rem;
   }
 
-  .post {
-    margin: 0.5rem 0;
+  .form-actions {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
-  .posts {
-    max-width: 100%;
-    padding: 0 1rem;
+  .form-actions button {
+    width: 100%;
   }
 }
 
