@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 dotenv.config({ path: 'api/config/config.env' });
 
 const sequelize = new Sequelize(process.env.DATABASE_URI, {
-    dialect: 'mysql',
+    dialect: 'mariadb',
     dialectOptions: {
       charset: 'utf8mb4',
     },
